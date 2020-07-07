@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Mood Predictor</string>
+    <string name="history">History</string>
+    <string name="set_locations">Locations</string>
+    <string name="Home">Home</string>
+    <string name="navigation_drawer_open">Open Navigation Drawer</string>
+    <string name="navigation_drawer_close">Close Navigation Drawer</string>
+    <string name="title_activity_maps">Map</string>
+</resources>
