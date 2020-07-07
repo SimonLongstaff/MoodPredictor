@@ -1,9 +1,22 @@
 <resources>
+    //Title
     <string name="app_name">Mood Predictor</string>
+
+    //Navigation Bar
     <string name="history">History</string>
     <string name="set_locations">Locations</string>
     <string name="Home">Home</string>
     <string name="navigation_drawer_open">Open Navigation Drawer</string>
     <string name="navigation_drawer_close">Close Navigation Drawer</string>
+
+    //Home Page
+    <string name="Current_Mood">Current Mood Estimation:</string>
+    <string name="Current_Mood_Prediction">Current Mood Prediction(PH)</string>
+    <string name="steps_today">Steps Today:</string>
+    <string name="steps">step count(PH)</string>
+    <string name="screen_on_time">Current Screen on Time:</string>
+    <string name="screenTime">Screen Time (PH)</string>
+
+    //Map
     <string name="title_activity_maps">Map</string>
 </resources>
