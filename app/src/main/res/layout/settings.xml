@@ -9,7 +9,16 @@
         android:layout_gravity="center_horizontal"
         android:text="@string/name"/>
 
-    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/Setting_User"
+        android:text=""/>
+
+
+
 
 
 </FrameLayout>

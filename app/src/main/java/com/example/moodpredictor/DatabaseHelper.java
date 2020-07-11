@@ -1,8 +1,13 @@
 package com.example.moodpredictor;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.Nullable;
 
@@ -23,9 +28,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //User Table columns
     private static final String UID = "UID";
     private static final String NAME = "Name";
-    private static final String OCCUPATION = "Occupation";
-    private static final String DOB = "DOB";
-    private static final String ACTIVITY_LEVEL = "Activity";
 
     //Mood Table Columns
     private static final String MID = "MID";
@@ -44,8 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //Table Creation
     //User Table
     private static final String CREATE_TABLE_USER = "CREATE TABLE " + USER_TABLE + "(" + UID +
-            " INTEGER PRIMARY KEY," + NAME + " TEXT," + OCCUPATION + " TEXT," + DOB + " TEXT," +
-            ACTIVITY_LEVEL + " INTEGER" + ")";
+            " INTEGER PRIMARY KEY," + NAME + " TEXT" + ")" ;
 
     //Mood Table
     private static final String CREATE_TABLE_MOOD = "CREATE TABLE " + MOOD_TABLE + " (" + MID +
@@ -61,6 +62,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 
+    //Debug User
+    User debug = new User(1, "Simon");
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -82,4 +85,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
 
     }
+
+    public void insertUser(User user){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(UID, user.getUID());
+        cv.put(NAME, user.getName());
+
+        db.insert(USER_TABLE, null, cv);
+    }
+
+    public String getLoggedIn(int UID){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT * FROM " + USER_TABLE + " WHERE " + "UID" + "=" + UID;
+
+        Log.e("SelectUser", selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+        String name = c.getString(c.getColumnIndex(NAME));
+        return name;
+
+    }
+
+
+
 }

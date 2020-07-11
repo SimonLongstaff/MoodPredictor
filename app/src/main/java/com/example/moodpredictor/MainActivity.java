@@ -22,11 +22,22 @@ import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SensorEventListener, StepListener {
 
+    //Drawers
     private DrawerLayout drawer;
+
+    //Sensors
     private SensorManager sensorManager;
     private StepDetector stepDetector;
     private Sensor accel;
     private int Stepsnum;
+    DatabaseHelper database = new DatabaseHelper(this);
+
+    //User
+    private int loggedInUID;
+    private String loggedInName;
+
+    //Debug User
+    User debug = new User(1, "Simon");
 
 
     @Override
@@ -52,11 +63,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        //User
+       loggedInUID = 1;
+       SettingUser();
+
+
+
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         }
 
     }
+
+    //User
+    public int getLoggedInUser(){
+        return loggedInUID;
+    }
+
+    public void setLoggedInUser(int loggedInUser) {
+        this.loggedInUID = loggedInUser;
+    }
+
+    public void SettingUser(){
+        String user = database.getLoggedIn(loggedInUID);
+        System.out.println(user);
+       loggedInName = user;
+    }
+
+    public String getLoggedInName(){
+        return loggedInName;
+    }
+
+
+    //Navigation Bar
 
     @Override
     public void onBackPressed() {
@@ -64,10 +104,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawer.closeDrawer(GravityCompat.START);
         } else
             super.onBackPressed();
-    }
-
-    public String getSteps() {
-        return String.valueOf(Stepsnum);
     }
 
     @Override
@@ -82,10 +118,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_steps:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HistoryFragment()).commit();
                 break;
+            case R.id.nav_setting:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SettingFragment()).commit();
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+    //Step Sensor updates
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
@@ -108,5 +149,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         homeFragment.setSteps(String.valueOf(Stepsnum));
 
     }
+
+
+
 
 }
