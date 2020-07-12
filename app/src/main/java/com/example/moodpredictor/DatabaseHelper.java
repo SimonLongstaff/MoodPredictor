@@ -143,7 +143,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(STEPS,steps);
-        db.update(STEP_TABLE, cv, STEPS_ID + "=" + step_id, null);
+        db.update(STEP_TABLE, cv, STEPS_ID + "= '" + step_id + "'", null);
         System.out.println("Update Steps");
 
     }
@@ -151,15 +151,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean stepIDExists(int uid) {
         SQLiteDatabase db = this.getReadableDatabase();
+        System.out.println("Checking Step Id");
         String id = uid + date;
-        String selectQuery = "SELECT * FROM " + STEP_TABLE + " WHERE " + STEPS_ID + "=" + id;
+        String selectQuery = "SELECT * FROM " + STEP_TABLE + " WHERE " + STEPS_ID + " = '" + id + "'";
         Log.e("idExists", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c.getCount() == 0) {
             c.close();
+            System.out.println("StepId not found");
             return false;
         }
         c.close();
+        System.out.println("StepID found");
         return true;
     }
 
@@ -167,15 +170,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String rv = "Not found";
-        String selectQuery = "SELECT * FROM " + STEP_TABLE + " WHERE " + STEPS_ID + " = " + stepID;
+        String selectQuery = "SELECT * FROM " + STEP_TABLE + " WHERE " + STEPS_ID + " = '" + stepID + "'";
 
         Log.e("getSteps", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
 
-        //if (c != null) {
-           // c.moveToFirst();
-          //  rv = String.valueOf(c.getInt(c.getColumnIndex(STEPS)));
-       // }
+        if (c != null) {
+            c.moveToFirst();
+            rv = String.valueOf(c.getInt(c.getColumnIndex(STEPS)));
+        }
 
         return rv;
     }
