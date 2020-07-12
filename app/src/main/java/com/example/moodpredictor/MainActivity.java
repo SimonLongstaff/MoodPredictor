@@ -20,6 +20,9 @@ import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SensorEventListener, StepListener {
 
     //Drawers
@@ -36,14 +39,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int loggedInUID;
     private String loggedInName;
 
+    //Var
+    String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+
     //Debug User
-    User debug = new User(1, "Simon");
+    User debug = new User("Simon");
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        database.wipe();
+        database.insertUser(debug);
 
         //Step Sensor setup
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -67,7 +75,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
        loggedInUID = 1;
        SettingUser();
 
-
+       //Create Steps database
+        if (!database.stepIDExists(loggedInUID)) {
+            System.out.println("It returned false for Step ID exists");
+            database.insertNewStepDay(0,loggedInUID);
+        }
 
 
         if (savedInstanceState == null) {
@@ -145,9 +157,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void step(long timeNs) {
         Stepsnum++;
-        HomeFragment homeFragment = (HomeFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        homeFragment.setSteps(String.valueOf(Stepsnum));
+        System.out.println("Number of Steps: " + Stepsnum);
+        String id = loggedInUID + date;
+        database.updateSteps(id,Stepsnum);
+    }
 
+
+    public String getSteps(){
+        String id = loggedInUID + date;
+        System.out.println(id);
+        return database.getSteps(id);
     }
 
 

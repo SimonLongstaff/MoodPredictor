@@ -10,6 +10,11 @@ public class User {
         this.Name = name;
     }
 
+    public User(String name){
+        this.Name = name;
+
+    }
+
     @Override
     public String toString(){
         return "UID :" + UID +

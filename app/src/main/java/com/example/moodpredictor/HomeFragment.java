@@ -25,14 +25,16 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.home_layout, container, false);
+        View view = inflater.inflate(R.layout.home_layout, container, false);
+
+        MainActivity activity = (MainActivity) getActivity();
+        TextView Stepnum = view.findViewById(R.id.numSteps);
+        Stepnum.setText(activity.getSteps());
+
+        return view;
+
 
     }
 
-    public void setSteps(String s) {
-        TextView Stepnum = Objects.requireNonNull(getView()).findViewById(R.id.numSteps);
-        Stepnum.setText(s);
-
-    }
 
 }
