@@ -1,32 +1,60 @@
 package com.example.moodpredictor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.Manifest;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.material.navigation.NavigationView;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SensorEventListener, StepListener {
+public class MainActivity extends AppCompatActivity
+        implements
+        NavigationView.OnNavigationItemSelectedListener,
+        SensorEventListener,
+        StepListener{
 
     //Drawers
     private DrawerLayout drawer;
+
+    //Var
+    String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+
+   //Location
 
     //Sensors
     private SensorManager sensorManager;
@@ -36,11 +64,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DatabaseHelper database = new DatabaseHelper(this);
 
     //User
-    private int loggedInUID;
+    private int loggedInUID = 1;
     private String loggedInName;
+    String id = loggedInUID + date;
 
-    //Var
-    String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
 
     //Debug User
     User debug = new User("Simon");
@@ -50,8 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        database.wipe();
-        database.insertUser(debug);
+
 
         //Step Sensor setup
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -60,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         stepDetector.registerListener(this);
         Stepsnum = 0;
         sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+
+
 
 
         //Navigation Bar setup
@@ -76,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
        SettingUser();
 
        //Create Steps database
-        if (!database.stepIDExists(loggedInUID)) {
+        if (!database.stepIDExists(id)) {
             System.out.println("It returned false for Step ID exists");
             database.insertNewStepDay(0,loggedInUID);
         }
@@ -87,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
     }
+
+
 
     //User
     public int getLoggedInUser(){
@@ -106,6 +136,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public String getLoggedInName(){
         return loggedInName;
     }
+
+    public String getDate(){return date;}
 
 
     //Navigation Bar
@@ -158,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void step(long timeNs) {
         Stepsnum++;
         System.out.println("Number of Steps: " + Stepsnum);
-        String id = loggedInUID + date;
         database.updateSteps(id,Stepsnum);
     }
 
@@ -168,8 +199,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         System.out.println(id);
         return database.getSteps(id);
     }
-
-
-
 
 }

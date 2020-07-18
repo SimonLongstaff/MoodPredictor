@@ -24,7 +24,8 @@
 
     //Settings
     <string name="name">Name:</string>
-
+    <string name="how_are_you_today">How are you today?</string>
+    <string name="x">X</string>
 
 
 </resources>

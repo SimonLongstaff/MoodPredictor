@@ -9,7 +9,6 @@ import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 
 import androidx.annotation.Nullable;
 
@@ -55,7 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //Mood Table
     private static final String CREATE_TABLE_MOOD = "CREATE TABLE " + MOOD_TABLE + " (" + MID +
-            " INTEGER PRIMARY KEY AUTOINCREMENT," + MOODDATE + " TEXT," + MOOD + " INTEGER," + UID + " INTEGER" + ")";
+            " TEXT PRIMARY KEY ," + MOODDATE + " TEXT," + MOOD + " INTEGER," + UID + " INTEGER" + ")";
 
     //Step Table
     private static final String CREATE_TABLE_STEPS = "CREATE TABLE " + STEP_TABLE + " (" + STEPS_ID +
@@ -76,16 +75,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_STEPS);
         db.execSQL(CREATE_TABLE_SHAKE);
 
-    }
-
-    public void wipe() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DROP TABLE IF EXISTS " + USER_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + STEP_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + MOOD_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + SHKAE_TABLE);
-
-        onCreate(db);
     }
 
     @Override
@@ -145,25 +134,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(STEPS,steps);
         db.update(STEP_TABLE, cv, STEPS_ID + "= '" + step_id + "'", null);
         System.out.println("Update Steps");
+        db.close();
 
     }
 
 
-    public boolean stepIDExists(int uid) {
+    public boolean stepIDExists(String stepsid) {
         SQLiteDatabase db = this.getReadableDatabase();
         System.out.println("Checking Step Id");
-        String id = uid + date;
-        String selectQuery = "SELECT * FROM " + STEP_TABLE + " WHERE " + STEPS_ID + " = '" + id + "'";
+        String selectQuery = "SELECT * FROM " + STEP_TABLE + " WHERE " + STEPS_ID + " = '" + stepsid + "'";
         Log.e("idExists", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
-        if (c.getCount() == 0) {
+        if (c.getCount()>0) {
+            c.close();
+            System.out.println("StepID found");
+            return true;
+        }
+        else {
             c.close();
             System.out.println("StepId not found");
             return false;
         }
-        c.close();
-        System.out.println("StepID found");
-        return true;
+
     }
 
     public String getSteps(String stepID) {
@@ -181,5 +173,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return rv;
+    }
+
+    public void newMood(String mID, int uID, int mood, String date ){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(MID, mID);
+        cv.put(UID, uID);
+        cv.put(MOOD, mood);
+        cv.put(MOODDATE, date);
+        db.insert(MOOD_TABLE, null, cv);
+
+    }
+
+    public void updateMood(String mID, int mood){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(MOOD, mood);
+        db.update(MOOD_TABLE, cv, MID + "= '" + mID + "'", null);
+        System.out.println("Mood Updated");
+        db.close();
+    }
+
+    public boolean moodIDExists(String mID){
+        SQLiteDatabase db = this.getReadableDatabase();
+        System.out.println("Checking Mood Id");
+        String selectQuery = "SELECT * FROM " + MOOD_TABLE + " WHERE " + MID + " = '" + mID + "'";
+        Log.e("idExists", selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.getCount()>0) {
+            c.close();
+            System.out.println("MID found");
+            return true;
+        }
+        else {
+            c.close();
+            System.out.println("MID not found");
+            return false;
+        }
+
     }
 }

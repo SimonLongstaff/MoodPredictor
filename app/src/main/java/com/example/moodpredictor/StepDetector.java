@@ -6,7 +6,7 @@ public class StepDetector {
     private static final int VEL_RING_SIZE = 10;
 
     // Step threshold sensitivity
-    private static final float STEP_THRESHOLD = 1;
+    private static final float STEP_THRESHOLD = 50f;
 
     //Step Delay sensitivity (nanoseconds)
     //Currently set to : 0.25 seconds
