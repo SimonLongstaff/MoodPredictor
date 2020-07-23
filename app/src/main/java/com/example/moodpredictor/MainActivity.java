@@ -81,6 +81,8 @@ public class MainActivity extends AppCompatActivity
 
         //Step Sensor setup
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        Sensor stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        sensorManager.registerListener(this,stepSensor,SensorManager.SENSOR_DELAY_NORMAL);
         accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         stepDetector = new StepDetector();
         stepDetector.registerListener(this);
@@ -101,6 +103,8 @@ public class MainActivity extends AppCompatActivity
 
         //User
        loggedInUID = 1;
+      //database.insertUser(debug);
+       //database.dummyData();
        SettingUser();
 
        //Create Steps database
@@ -113,6 +117,9 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         }
+
+        database.getStepsMood(1);
+
 
     }
 
@@ -174,10 +181,24 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            stepDetector.updateAccel(
-                    sensorEvent.timestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
 
+        switch (sensorEvent.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER: {
+                stepDetector.updateAccel(
+                        sensorEvent.timestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
+                break;
+
+            }
+
+            case  Sensor.TYPE_STEP_COUNTER: {
+                if (Stepsnum < 1)
+                    Stepsnum = (int) sensorEvent.values[0];
+
+                Stepsnum = (int) sensorEvent.values[0] - Stepsnum;
+                database.updateSteps(id, Stepsnum);
+                System.out.println("New Steps registered");
+                break;
+            }
         }
     }
 
@@ -189,8 +210,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void step(long timeNs) {
         Stepsnum++;
-        System.out.println("Number of Steps: " + Stepsnum);
+        System.out.println("Old Step registered");
         database.updateSteps(id,Stepsnum);
+
     }
 
 
@@ -200,4 +222,15 @@ public class MainActivity extends AppCompatActivity
         return database.getSteps(id);
     }
 
+    public String getShake(){
+       return database.getShake(loggedInUID, date);
+    }
+
+    @Override
+    public void shake(long timeNs) {
+        System.out.println("New Shake");
+        database.newShake(loggedInUID,date);
+
+
+    }
 }

@@ -10,6 +10,9 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import androidx.fragment.app.Fragment;
 
 public class HomeFragment extends Fragment {
@@ -26,10 +29,17 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.home_layout, container, false);
 
         MainActivity activity = (MainActivity) getActivity();
-        TextView Stepnum = view.findViewById(R.id.numSteps);
-        Stepnum.setText(activity.getSteps());
+        TextView stepnum = view.findViewById(R.id.numSteps);
+        stepnum.setText(activity.getSteps());
 
-        Button openMoodPopup = (Button)view.findViewById(R.id.set_mood);
+        TextView shakenum = view.findViewById(R.id.numShake);
+        shakenum.setText(activity.getShake());
+
+        int[][] matrix = matrixBuilder();
+        BayesHelper.predictMood(matrix, 3600);
+
+
+        Button openMoodPopup = (Button) view.findViewById(R.id.set_mood);
         openMoodPopup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -42,7 +52,7 @@ public class HomeFragment extends Fragment {
 
     }
 
-    public void showPopup(View view){
+    public void showPopup(View view) {
 
         View popupView = getLayoutInflater().inflate(R.layout.moodpopup, null);
         final MainActivity activity = (MainActivity) getActivity();
@@ -58,7 +68,7 @@ public class HomeFragment extends Fragment {
         close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-             popupWindow.dismiss();
+                popupWindow.dismiss();
             }
         });
 
@@ -67,12 +77,10 @@ public class HomeFragment extends Fragment {
         veryBad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               if (activity.database.moodIDExists(mId)){
-                   activity.database.updateMood(mId, 1);
-               }
-
-               else
-                   activity.database.newMood(mId,user,1,date);
+                if (activity.database.moodIDExists(mId)) {
+                    activity.database.updateMood(mId, 1);
+                } else
+                    activity.database.newMood(mId, user, 1, date);
                 popupWindow.dismiss();
 
             }
@@ -83,12 +91,10 @@ public class HomeFragment extends Fragment {
         bad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(mId)){
+                if (activity.database.moodIDExists(mId)) {
                     activity.database.updateMood(mId, 2);
-                }
-
-                else
-                    activity.database.newMood(mId,user,2,date);
+                } else
+                    activity.database.newMood(mId, user, 2, date);
                 popupWindow.dismiss();
 
             }
@@ -99,12 +105,10 @@ public class HomeFragment extends Fragment {
         neutral.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(mId)){
+                if (activity.database.moodIDExists(mId)) {
                     activity.database.updateMood(mId, 3);
-                }
-
-                else
-                    activity.database.newMood(mId,user,3,date);
+                } else
+                    activity.database.newMood(mId, user, 3, date);
                 popupWindow.dismiss();
 
             }
@@ -115,12 +119,10 @@ public class HomeFragment extends Fragment {
         good.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(mId)){
+                if (activity.database.moodIDExists(mId)) {
                     activity.database.updateMood(mId, 4);
-                }
-
-                else
-                    activity.database.newMood(mId,user,4,date);
+                } else
+                    activity.database.newMood(mId, user, 4, date);
                 popupWindow.dismiss();
 
             }
@@ -131,18 +133,15 @@ public class HomeFragment extends Fragment {
         veryGood.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(mId)){
+                if (activity.database.moodIDExists(mId)) {
                     activity.database.updateMood(mId, 5);
-                }
-
-                else
-                    activity.database.newMood(mId,user,5,date);
+                } else
+                    activity.database.newMood(mId, user, 5, date);
                 popupWindow.dismiss();
 
 
             }
         });
-
 
 
         popupWindow.setFocusable(true);
@@ -151,8 +150,38 @@ public class HomeFragment extends Fragment {
         view.getLocationOnScreen(location);
 
         popupWindow.showAtLocation(view, Gravity.CENTER_HORIZONTAL, 0, view.getHeight());
-        
+
     }
+
+    //Buiuld the step matrix for Bayesian prediction
+    public int[][] matrixBuilder() {
+        final MainActivity activity = (MainActivity) getActivity();
+
+        ArrayList<StepMoodObject> matrixBuilder = activity.database.getStepsMood(activity.getLoggedInUser());
+
+        int[][] matrix = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+
+        for (int i = 0; i < matrixBuilder.size(); i++) {
+            int steps = matrixBuilder.get(i).getSteps();
+            int mood = matrixBuilder.get(i).getMood() - 1;
+            int stepbucket = BayesHelper.stepBucket(steps);
+
+
+            System.out.println("mood " + mood);
+            System.out.println("stepbucket " + stepbucket);
+
+            matrix[mood][stepbucket] = matrix[mood][stepbucket] + 1;
+        }
+
+        System.out.println(Arrays.deepToString(matrix));
+        return matrix;
+    }
+
+
 
 
 }
