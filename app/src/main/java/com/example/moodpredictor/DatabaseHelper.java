@@ -6,13 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -52,6 +53,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //Shake Table Columns
     private static final String SHAKE_ID = "shakeID";
     private static final String SHAKE_DATE = "shakeDate";
+    private static final String SHAKES = "shakes";
 
     //Table Creation
     //User Table
@@ -68,7 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //Shake Table
     private static final String CREATE_TABLE_SHAKE = "CREATE TABLE " + SHAKE_TABLE + " (" + SHAKE_ID +
-            " TEXT PRIMARY KEY ," + SHAKE_DATE + " TEXT," + UID + " INTEGER" + ")";
+            " INTEGER PRIMARY KEY AUTOINCREMENT ," + SHAKES + " TEXT," + SHAKE_DATE + " TEXT," + UID + " INTEGER" + ")";
 
 
     //Debug User
@@ -95,6 +97,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    //USERS -----------------------------------------------------------------------------------------------------------------------------------------------------
+
     public void insertUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -117,6 +121,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return c.getString(c.getColumnIndex(NAME));
 
     }
+
+    //STEPS -----------------------------------------------------------------------------------------------------------------------------------------------------
 
     public void insertNewStepDay(int steps, int uid) {
         System.out.println("Got to insert");
@@ -180,11 +186,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rv;
     }
 
-    public void newMood(String mID, int uID, int mood, String date) {
+    //MOOD -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public void newMood(int uID, int mood, String date) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
 
-        cv.put(MID, mID);
         cv.put(UID, uID);
         cv.put(MOOD, mood);
         cv.put(MOODDATE, date);
@@ -192,20 +199,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void updateMood(String mID, int mood) {
+    public void updateMood(int uid, String date, int mood) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
 
         cv.put(MOOD, mood);
-        db.update(MOOD_TABLE, cv, MID + "= '" + mID + "'", null);
+        db.update(MOOD_TABLE, cv, UID + " = '" + uid + "' AND " + MOODDATE + " = '" + date + "'", null);
         System.out.println("Mood Updated");
         db.close();
     }
 
-    public boolean moodIDExists(String mID) {
+    public boolean moodIDExists(int uid, String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         System.out.println("Checking Mood Id");
-        String selectQuery = "SELECT * FROM " + MOOD_TABLE + " WHERE " + MID + " = '" + mID + "'";
+        String selectQuery = "SELECT * FROM " + MOOD_TABLE + " WHERE " + UID + " = '" + uid + "' AND " + MOODDATE + " = '" + date + "'";
         Log.e("idExists", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
         if (c.getCount() > 0) {
@@ -220,33 +227,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    //Shake -----------------------------------------------------------------------------------------------------------------------------------------------------
+
     public void newShake(int uID, String date) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
 
         cv.put(UID, uID);
         cv.put(SHAKE_DATE, date);
+        cv.put(SHAKES, 1);
         db.insert(SHAKE_TABLE, null, cv);
-
+        db.close();
     }
 
-    public String getShake(int uId, String date) {
+    public void updateShake(int uid, String date, int shakes) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(SHAKES, shakes);
+        db.update(SHAKE_TABLE, cv, UID + " = '" + uid + "' AND " + SHAKE_DATE + " = '" + date + "'", null);
+        db.close();
+    }
+
+    public String getShake(int uID, String date) {
         SQLiteDatabase db = getReadableDatabase();
 
         String rv = "Not found";
-        String selectQuery = "SELECT * FROM " + SHAKE_TABLE + " WHERE " + UID + " = '" + uId + "' AND " + SHAKE_DATE + " = '" + date + "'";
+        String selectQuery = "SELECT * FROM " + SHAKE_TABLE + " WHERE " + UID + " = '" + uID + "' AND " + SHAKE_DATE + " = '" + date + "'";
 
-        Log.e("getSteps", selectQuery);
+        Log.e("getShake", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
 
         if (c != null) {
-
-            rv = String.valueOf(c.getCount());
+            c.moveToFirst();
+            rv = String.valueOf(c.getString(c.getColumnIndex(SHAKES)));
         }
-
         return rv;
-
     }
+
+    public boolean shakeExists(int uID, String date) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        System.out.println("Checking Mood Id");
+        String selectQuery = "SELECT * FROM " + SHAKE_TABLE + " WHERE " + UID + " = '" + uID + "' AND " + SHAKE_DATE + " = '" + date + "'";
+        Log.e("idExists", selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.getCount() > 0) {
+            c.close();
+            return true;
+        } else {
+            c.close();
+            return false;
+        }
+    }
+
+
+    //Predict -----------------------------------------------------------------------------------------------------------------------------------------------------
 
     public ArrayList<StepMoodObject> getStepsMood(int uid) {
 
@@ -256,29 +291,60 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT userMoodTable.mood, userStepsTable.Steps, userStepsTable.Date FROM " + USER_TABLE +
                 " JOIN " + MOOD_TABLE + " ON userMoodTable.UID=userTable.UID " +
                 "JOIN " + STEP_TABLE + "  ON userStepsTable.UID=userTable.UID " +
-                "WHERE userTable.UID=" + uid;
+                "AND userStepsTable.Date=userMoodTable.moodDate " +
+                "WHERE userTable.UID= " + uid;
 
         Log.e("getStepsAndMood", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
 
-        if (c != null) {
+        while (c.moveToNext()) {
+            StepMoodObject rv = new StepMoodObject(c.getInt(c.getColumnIndex(STEPS)), c.getInt(c.getColumnIndex(MOOD)), c.getString(c.getColumnIndex(DATE)));
+            retval.add(rv);
 
-            for (int i =1; i < 356; i++) {
-                c.move(i);
-                StepMoodObject rv = new StepMoodObject(c.getInt(c.getColumnIndex(STEPS)), c.getInt(c.getColumnIndex(MOOD)), c.getString(c.getColumnIndex(DATE)));
-                retval.add(rv);
-
-            }
         }
 
-        System.out.println(Arrays.toString(retval.toArray()));
-        return retval;
+        int count = 1;
+        for (StepMoodObject element : retval) {
+            System.out.print(count + " ");
+            System.out.println(element);
+            count++;
 
+        }
+        c.close();
+        db.close();
+        return retval;
+    }
+
+    public ArrayList<ShakeMoodObject> getShakeMood(int uid){
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<ShakeMoodObject> retval = new ArrayList<>();
+
+        String selectQuery = "SELECT userMoodTable.mood, userShakeTable.shakes, userShakeTable.shakeDate FROM " + USER_TABLE +
+                " JOIN " + MOOD_TABLE + " ON userMoodTable.UID=userTable.UID " +
+                "JOIN " + SHAKE_TABLE + "  ON userShakeTable.UID=userTable.UID " +
+                "AND userShakeTable.shakeDate=userMoodTable.moodDate " +
+                "WHERE userTable.UID= " + uid;
+
+        Log.e("getShakeAndMood", selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        while (c.moveToNext()){
+            ShakeMoodObject rv = new ShakeMoodObject(c.getInt(c.getColumnIndex(SHAKES)),c.getInt(c.getColumnIndex(MOOD)),c.getString(c.getColumnIndex(SHAKE_DATE)));
+            retval.add(rv);
+        }
+
+        c.close();
+        db.close();
+        return retval;
 
     }
 
+
+    //TESTING ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
     public void dummyData() {
         SQLiteDatabase db = getWritableDatabase();
+        int insert = 0;
 
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, 2000);
@@ -292,7 +358,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         d.set(Calendar.DAY_OF_MONTH, 31);
         Date end = d.getTime();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 500; i++) {
 
             String date = randDate(start, end);
             String sid = "1" + date;
@@ -305,20 +371,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 cv.put(DATE, date);
                 db.insert(STEP_TABLE, null, cv);
 
-                if (!moodIDExists(sid)) {
+                if (!moodIDExists(1, date)) {
                     ContentValues contentValues = new ContentValues();
-                    int mood = new Random().nextInt(4) + 1;
+                    int mood = new Random().nextInt(5) + 1;
                     contentValues.put(MOOD, mood);
-                    contentValues.put(MOODDATE,date);
+                    contentValues.put(MOODDATE, date);
                     contentValues.put(UID, 1);
                     db.insert(MOOD_TABLE, null, contentValues);
                 }
+
+                ContentValues contentValues = new ContentValues();
+                int shake = new Random().nextInt(10000) + 1;
+                contentValues.put(SHAKE_DATE, date);
+                contentValues.put(UID, 1);
+                contentValues.put(SHAKES, shake);
+                db.insert(SHAKE_TABLE, null, contentValues);
+
             }
 
-
+            insert++;
+            System.out.println("Data Inserted: " + insert);
         }
 
+
     }
+
 
     public String randDate(Date startInclusive, Date endExclusive) {
         long startMillis = startInclusive.getTime();

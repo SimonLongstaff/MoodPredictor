@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity
     private StepDetector stepDetector;
     private Sensor accel;
     private int Stepsnum;
+    private int shakeNum;
     DatabaseHelper database = new DatabaseHelper(this);
 
     //User
@@ -103,8 +104,9 @@ public class MainActivity extends AppCompatActivity
 
         //User
        loggedInUID = 1;
-      //database.insertUser(debug);
-       //database.dummyData();
+       //database.insertUser(debug);
+      //database.dummyData();
+       database.newShake(1,date);
        SettingUser();
 
        //Create Steps database
@@ -118,7 +120,6 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         }
 
-        database.getStepsMood(1);
 
 
     }
@@ -229,7 +230,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void shake(long timeNs) {
         System.out.println("New Shake");
-        database.newShake(loggedInUID,date);
+        if (database.shakeExists(getLoggedInUser(),date)){
+            shakeNum++;
+            database.updateShake(getLoggedInUser(),date,shakeNum);
+        }
+        else {
+            database.newShake(loggedInUID, date);
+            shakeNum = 1;
+        }
 
 
     }
