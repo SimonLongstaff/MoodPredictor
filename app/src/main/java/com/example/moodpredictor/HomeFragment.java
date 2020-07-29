@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -25,21 +26,64 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        this.onCreate(null);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.home_layout, container, false);
 
-        MainActivity activity = (MainActivity) getActivity();
-        TextView stepnum = view.findViewById(R.id.numSteps);
+        final MainActivity activity = (MainActivity) getActivity();
+        final TextView stepnum = view.findViewById(R.id.numSteps);
         stepnum.setText(activity.getSteps());
 
-        TextView shakenum = view.findViewById(R.id.numShake);
+        final TextView shakenum = view.findViewById(R.id.numShake);
         shakenum.setText(activity.getShake());
 
-        int[][] matrixSteps = matrixBuilder();
-        int[][] matrixShake = shakeMatrixBuilder();
-        BayesHelper.predictMoodSteps(matrixSteps, 3600);
-        BayesHelper.predictMoodShake(matrixShake, 3000);
-        BayesHelper.predictMoodShakeStep(matrixSteps,matrixShake,5000,3000);
+        final TextView onTimenum = view.findViewById(R.id.numScreenOnTime);
+        onTimenum.setText(activity.getOnTime());
+
+        final TextView mood = view.findViewById(R.id.TextMoodPredict);
+
+
+        Button refresh = (Button) view.findViewById(R.id.refresh);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stepnum.setText(activity.getSteps());
+                shakenum.setText(activity.getShake());
+                onTimenum.setText(activity.getOnTime());
+
+            }
+        });
+
+        Button predict = view.findViewById(R.id.buttonPredictMood);
+        predict.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int result = activity.prediction();
+                switch (result){
+                    case (1):
+                        mood.setText("Very Poor");
+                        break;
+                    case (2):
+                        mood.setText("Poor");
+                        break;
+                    case (3):
+                        mood.setText("Neutral");
+                        break;
+                    case (4):
+                        mood.setText("Good");
+                        break;
+                    case (5):
+                        mood.setText("Very Good");
+                        break;
+
+                }
+            }
+        });
 
 
         Button openMoodPopup = (Button) view.findViewById(R.id.set_mood);
@@ -194,7 +238,6 @@ public class HomeFragment extends Fragment {
                 {1,1,1,1,1,1},};
 
         for (int i = 0; i < matrixBuilder.size(); i++) {
-            //System.out.println(i);
             int shakes = matrixBuilder.get(i).getShakes();
             int mood = matrixBuilder.get(i).getMood() - 1;
             int shakeBucket = BayesHelper.shakeBucket(shakes);
@@ -205,6 +248,29 @@ public class HomeFragment extends Fragment {
         System.out.println("Shake: " + Arrays.deepToString(matrix));
         return matrix;
 
+    }
+
+    public int[][] onTimeMAtrixBuilder(){
+        final MainActivity activity = (MainActivity) getActivity();
+        ArrayList<onTimeMoodObject> matrixBuilder = activity.database.getonTimeMood(activity.getLoggedInUser());
+
+        int[][] matrix = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},};
+
+        for (int i = 0; i< matrixBuilder.size(); i++){
+            System.out.println(i);
+            System.out.println(matrixBuilder.get(i).toString());
+            int onTime = matrixBuilder.get(i).getOnTime();
+            int mood = matrixBuilder.get(i).getMood()-1;
+            int onTimeBucket = BayesHelper.onTimeBucket(onTime);
+
+            matrix[mood][onTimeBucket]++;
+
+        }
+        return matrix;
     }
 
 

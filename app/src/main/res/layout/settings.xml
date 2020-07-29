@@ -17,6 +17,45 @@
         android:id="@+id/Setting_User"
         android:text=""/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="300dp"
+        android:layout_marginLeft="100dp"
+        android:text="Add 1000 Steps"
+        android:id="@+id/DEBUG_addsteps"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="300dp"
+        android:layout_marginRight="100dp"
+        android:text="Add 1000 Shakes"
+        android:id="@+id/DEBUG_addShakes"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="250dp"
+        android:layout_marginLeft="100dp"
+        android:text="Remove 1000 Steps"
+        android:id="@+id/DEBUG_removesteps"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="250dp"
+        android:layout_marginRight="100dp"
+        android:text="Remove 1000 Shakes"
+        android:id="@+id/DEBUG_removeShakes"/>
+
+
+
+
 
 
 

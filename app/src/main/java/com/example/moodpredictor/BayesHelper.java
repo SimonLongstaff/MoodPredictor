@@ -4,137 +4,49 @@ import java.util.Arrays;
 
 public class BayesHelper {
 
-    //Takes a matrix of steps and moods as input, compares them to current steps to predict mood.
-    public static int predictMoodSteps(int[][] matrix, int steps) {
 
-
-        int stepbucket = stepBucket(steps);
-
-        double totalVS = totalMatrixRow(matrix, 10, 0);
-        double totalS = totalMatrixRow(matrix,10, 1);
-        double totalN = totalMatrixRow(matrix,10, 2);
-        double totalH = totalMatrixRow(matrix,10, 3);
-        double totalVH = totalMatrixRow(matrix,10, 4);
-
-        double stepBucketTotal = totalMatrixColumn(matrix,9, stepbucket);
-        double total = totalMatrix(matrix,9,5);
-
-
-        double predictVS = ((matrix[stepbucket][0] / totalVS) * (totalVS / total)) / (stepBucketTotal / total);
-        double predictS = ((matrix[stepbucket][1] / totalS) * (totalS / total)) / (stepBucketTotal / total);
-        double predictN = ((matrix[stepbucket][2] / totalN) * (totalN / total)) / (stepBucketTotal / total);
-        double predictH = ((matrix[stepbucket][3] / totalH) * (totalH / total)) / (stepBucketTotal / total);
-        double predictVH = (((matrix[stepbucket][4] / totalVH) * (totalVH / total)) / (stepBucketTotal / total));
-
-        double[] predict = new double[]{predictVS, predictS, predictN, predictH, predictVH};
-        System.out.println(Arrays.toString(predict));
-
-        int highest = 0;
-        double currentTop = 0;
-        for (int i = 0; i < predict.length; i++) {
-            if (predict[i] > currentTop) {
-                highest = i + 1;
-                currentTop = predict[i];
-            }
-            System.out.println("Current Top: " + highest);
-
-        }
-
-        System.out.println("Highest percentage mood: " + highest);
-        return highest;
-
-
-    }
-
-    public static int predictMoodShake(int[][] matrix, int shakes){
-
-        int shakeBucket = shakeBucket(shakes);
-
-        double totalVS = totalMatrixRow(matrix, 5, 0);
-        double totalS = totalMatrixRow(matrix,5, 1);
-        double totalN = totalMatrixRow(matrix,5, 2);
-        double totalH = totalMatrixRow(matrix,5, 3);
-        double totalVH = totalMatrixRow(matrix,5, 4);
-
-        double shakeBucketTotal = totalMatrixColumn(matrix, shakeBucket,5);
-        double total = totalMatrix(matrix,5,5);
-
-        double predictVS = ((matrix[shakeBucket][0] / totalVS) * (totalVS / total)) / (shakeBucketTotal / total);
-        double predictS = ((matrix[shakeBucket][1] / totalS) * (totalS / total)) / (shakeBucketTotal / total);
-        double predictN = ((matrix[shakeBucket][2] / totalN) * (totalN / total)) / (shakeBucketTotal / total);
-        double predictH = ((matrix[shakeBucket][3] / totalH) * (totalH / total)) / (shakeBucketTotal / total);
-        double predictVH = (((matrix[shakeBucket][4] / totalVH) * (totalVH / total)) / (shakeBucketTotal / total));
-
-        double[] predict = new double[]{predictVS, predictS, predictN, predictH, predictVH};
-        System.out.println(Arrays.toString(predict));
-
-
-        int highest = 0;
-        double currentTop = 0;
-        for (int i = 0; i < predict.length; i++) {
-            if (predict[i] > currentTop) {
-                highest = i + 1;
-                currentTop = predict[i];
-            }
-            System.out.println("Current Top: " + highest);
-
-        }
-
-        System.out.println("Highest percentage mood: " + highest);
-        return highest;
-
-    }
 
     //MultiBayes
-    public static int predictMoodShakeStep(int[][] stepsMatrix, int[][] shakeMatrix, int steps, int shakes){
 
-        System.out.print("MoodShake prediction tables");
-        System.out.print(Arrays.deepToString(shakeMatrix));
-        System.out.print(Arrays.deepToString(stepsMatrix));
+    public static int predictMoodShakeOnTime(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shakes, int steps, int onTime){
+        double tVS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,0);
+        double tS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,1);
+        double tN = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,2);
+        double tH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,3);
+        double tVH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,4);
 
-        System.out.println("Thetas start");
-        double tVS = matrixTheta(stepsMatrix,shakeMatrix,shakes,steps,0);
-        double tS = matrixTheta(stepsMatrix,shakeMatrix,shakes,steps,1);
-        double tN = matrixTheta(stepsMatrix,shakeMatrix,shakes,steps,2);
-        double tH = matrixTheta(stepsMatrix,shakeMatrix,shakes,steps,3);
-        double tVH = matrixTheta(stepsMatrix,shakeMatrix,shakes,steps,4);
-        System.out.println("Thetas Finish");
+        double totalVSCombined = totalMatrixRow(stepsMatrix,10,0) + totalMatrixRow(shakeMatrix, 6,0) + totalMatrixRow(onTimeMatrix,16,0);
+        double totalSCombined = totalMatrixRow(stepsMatrix,10,1) + totalMatrixRow(shakeMatrix, 6,1) + totalMatrixRow(onTimeMatrix,16,1);
+        double totalNCombined = totalMatrixRow(stepsMatrix,10,2) + totalMatrixRow(shakeMatrix, 6,2) + totalMatrixRow(onTimeMatrix,16,2);
+        double totalHCombined = totalMatrixRow(stepsMatrix,10,3) + totalMatrixRow(shakeMatrix, 6,3) + totalMatrixRow(onTimeMatrix,16,3);
+        double totalVHCombined = totalMatrixRow(stepsMatrix,10,4) + totalMatrixRow(shakeMatrix, 6,4) + totalMatrixRow(onTimeMatrix,16,4);
 
-        System.out.println("Total column Shake start");
         double totalVsShake = totalMatrixRow(shakeMatrix,6,0);
         double totalSShake = totalMatrixRow(shakeMatrix,6,1);
         double totalNShake = totalMatrixRow(shakeMatrix,6,2);
         double totalHShake = totalMatrixRow(shakeMatrix,6,3);
         double totalVhShake = totalMatrixRow(shakeMatrix,6,4);
-        System.out.println("Total column Shake finish");
 
-        System.out.println("Total column steps start");
         double totalVsSteps = totalMatrixRow(stepsMatrix,10,0);
         double totalSSteps = totalMatrixRow(stepsMatrix,10,1);
         double totalNSteps = totalMatrixRow(stepsMatrix,10,2);
         double totalHSteps = totalMatrixRow(stepsMatrix,10,3);
         double totalVhSteps = totalMatrixRow(stepsMatrix,10,4);
-        System.out.println("Total column Shake Finish");
 
-        System.out.println("Total row combined start");
-        double totalVSCombined = totalMatrixRow(stepsMatrix,10,0) + totalMatrixRow(shakeMatrix, 6,0);
-        double totalSCombined = totalMatrixRow(stepsMatrix,10,1) + totalMatrixRow(shakeMatrix, 6,1);
-        double totalNCombined = totalMatrixRow(stepsMatrix,10,2) + totalMatrixRow(shakeMatrix, 6,2);
-        double totalHCombined = totalMatrixRow(stepsMatrix,10,3) + totalMatrixRow(shakeMatrix, 6,3);
-        double totalVHCombined = totalMatrixRow(stepsMatrix,10,4) + totalMatrixRow(shakeMatrix, 6,4);
-        System.out.println("Total row combined finish");
-
-        System.out.println("Total combined start");
-        double totalCombined = totalMatrix(stepsMatrix,9,5) + totalMatrix(shakeMatrix, 5, 5);
-        System.out.println("Total combined finish");
+        double totalVsonTime = totalMatrixRow(onTimeMatrix,16,0);
+        double totalSonTime = totalMatrixRow(onTimeMatrix,16,1);
+        double totalNonTime = totalMatrixRow(onTimeMatrix,16,2);
+        double totalHonTime = totalMatrixRow(onTimeMatrix,16,3);
+        double totalVhonTime = totalMatrixRow(onTimeMatrix,16,4);
 
         double theta = tVS + tS + tN + tH + tVH;
+        double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5) + totalMatrix(onTimeMatrix,16,5);
 
-        double predictVS = (((shakeBucket(shakes)/totalVsShake) * (stepBucket(steps)/totalVsSteps))/theta)*(totalVSCombined/totalCombined);
-        double predictS = (((shakeBucket(shakes)/totalSShake) * (stepBucket(steps)/totalSSteps))/theta)*(totalSCombined/totalCombined);
-        double predictN = (((shakeBucket(shakes)/totalNShake) * (stepBucket(steps)/totalNSteps))/theta)*(totalNCombined/totalCombined);
-        double predictH = (((shakeBucket(shakes)/totalHShake) * (stepBucket(steps)/totalHSteps))/theta)*(totalHCombined/totalCombined);
-        double predictVH = (((shakeBucket(shakes)/totalVhShake) * (stepBucket(steps)/totalVhSteps))/theta)*(totalVHCombined/totalCombined);
+        double predictVS = (((shakeMatrix[0][shakeBucket(shakes)]/totalVsShake) * (stepsMatrix[0][stepBucket(steps)]/totalVsSteps) * (onTimeMatrix[0][onTimeBucket(onTime)]/totalVsonTime))/theta)*(totalVSCombined/totalCombined);
+        double predictS = (((shakeMatrix[1][shakeBucket(shakes)]/totalSShake) * (stepsMatrix[1][stepBucket(steps)]/totalSSteps) * (onTimeMatrix[1][onTimeBucket(onTime)]/totalSonTime))/theta)*(totalSCombined/totalCombined);
+        double predictN = (((shakeMatrix[2][shakeBucket(shakes)]/totalNShake) * (stepsMatrix[2][stepBucket(steps)]/totalNSteps) * (onTimeMatrix[2][onTimeBucket(onTime)]/totalNonTime))/theta)*(totalNCombined/totalCombined);
+        double predictH = (((shakeMatrix[3][shakeBucket(shakes)]/totalHShake) * (stepsMatrix[3][stepBucket(steps)]/totalHSteps) * (onTimeMatrix[3][onTimeBucket(onTime)]/totalHonTime))/theta)*(totalHCombined/totalCombined);
+        double predictVH = (((shakeMatrix[4][shakeBucket(shakes)]/totalVhShake) * (stepsMatrix[4][stepBucket(steps)]/totalVhSteps) * (onTimeMatrix[4][onTimeBucket(onTime)]/totalVhonTime))/theta)*(totalVHCombined/totalCombined);
 
         double[] predict = new double[]{predictVS, predictS, predictN, predictH, predictVH};
         System.out.println("Final predict " + Arrays.toString(predict));
@@ -153,19 +65,19 @@ public class BayesHelper {
         System.out.println("Highest percentage mood: " + highest);
         return highest;
 
-
     }
 
-    public static double matrixTheta(int[][] stepsMatrix, int[][] shakeMatrix, int shake, int steps, int mood ){
 
+    public static double matrixTheta(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shake, int steps, int onTime, int mood){
 
-                double totalMoodShake = totalMatrixRow(shakeMatrix,6,mood);
-                double totalMoodSteps = totalMatrixRow(stepsMatrix,10,mood);
-                double totalMoodCombined = totalMatrixRow(stepsMatrix,10,mood) + totalMatrixRow(shakeMatrix, 6,mood);
-                double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5);
+        double totalMoodShake = totalMatrixRow(shakeMatrix,6,mood);
+        double totalMoodSteps = totalMatrixRow(stepsMatrix,10,mood);
+        double totalOnTime = totalMatrixRow(onTimeMatrix,16,mood);
 
-                return ((shakeBucket(shake)/totalMoodShake) * (stepBucket(steps)/totalMoodSteps)) * (totalMoodCombined/totalCombined);
+        double totalMoodCombined = totalMoodShake + totalMoodSteps + totalOnTime;
+        double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5) + totalMatrix(onTimeMatrix,16,5);
 
+        return ((shakeMatrix[mood][shakeBucket(shake)]/totalMoodShake) * (stepsMatrix[mood][stepBucket(steps)]/totalMoodSteps) * (onTimeMatrix[mood][onTimeBucket(onTime)]/totalOnTime)) * (totalMoodCombined/totalCombined);
     }
 
     //Returns the total sum of values in a step matrix
@@ -264,5 +176,43 @@ public class BayesHelper {
         }
 
         return shakebucket;
+    }
+
+    public static int onTimeBucket(int onTime){
+
+        int onTimebucket = 0;
+
+        if (onTime>=3600 && onTime<7200)
+            onTimebucket =1;
+        if (onTime>=7200 && onTime<10800)
+            onTimebucket =2;
+        if (onTime>=10800 && onTime<14400)
+            onTimebucket =3;
+        if (onTime>=14400 && onTime<18000)
+            onTimebucket =4;
+        if (onTime>=18000 && onTime<21600)
+            onTimebucket =5;
+        if (onTime>=21600 && onTime<25200)
+            onTimebucket =6;
+        if (onTime>=25200 && onTime<28800)
+            onTimebucket =7;
+        if (onTime>=28800 && onTime<32400)
+            onTimebucket =8;
+        if (onTime>=32400 && onTime<36000)
+            onTimebucket =9;
+        if (onTime>=36000 && onTime<39600)
+            onTimebucket =10;
+        if (onTime>=39600 && onTime<43200)
+            onTimebucket =11;
+        if (onTime>=43200 && onTime<46800)
+            onTimebucket =12;
+        if (onTime>=46800 && onTime<50400)
+            onTimebucket =13;
+        if (onTime>=50400 && onTime<54000)
+            onTimebucket =14;
+        if (onTime>=54000 && onTime<57600)
+            onTimebucket =15;
+
+        return onTimebucket;
     }
 }
