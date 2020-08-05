@@ -3,8 +3,10 @@ package com.example.moodpredictor;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +30,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
@@ -41,7 +45,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     GoogleMap mGoogleMap;
     MapView mMapView;
     View mView;
-    MainActivity mainActivity = (MainActivity) getActivity();
+
     double lattiude;
     double longitude;
     LatLng CirclelatLng;
@@ -52,6 +56,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     //Geofence
     private GeofencingClient geofencingClient;
     private GeofenceHelper geofenceHelper;
+
 
 
     //Constructor
@@ -74,7 +79,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         mView = inflater.inflate(R.layout.map_fragment, container, false);
         geofenceHelper = new GeofenceHelper(getContext());
-        geofencingClient = LocationServices.getGeofencingClient(getActivity());
+        geofencingClient = LocationServices.getGeofencingClient(getContext());
         return mView;
     }
 
@@ -83,6 +88,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
 
         final EditText enterTitle = (EditText) Objects.requireNonNull(getView().findViewById(R.id.addTitle));
+
 
         ImageButton add = Objects.requireNonNull(getView()).findViewById(R.id.addNewPlace);
         add.setOnClickListener(new View.OnClickListener() {
@@ -114,6 +120,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onMapClick(LatLng latLng) {
                 mGoogleMap.clear();
+                addLocationsCircle();
                 MarkerOptions marker = new MarkerOptions()
                         .position(new LatLng(latLng.latitude, latLng.longitude))
                         .title("New Marker");
@@ -127,8 +134,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         });
 
         enableUserLocation();
-        enableBackgroundLocation();
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        addLocationsCircle();
     }
 
     private void enableUserLocation() {
@@ -141,12 +148,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-    private void enableBackgroundLocation() {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getContext(), "Background Location", Toast.LENGTH_LONG).show();
-        }else
-            Toast.makeText(getContext(), "Background fail", Toast.LENGTH_LONG).show();
-    }
 
     private void addCircle(LatLng latLng, float radius) {
         CircleOptions circleOptions = new CircleOptions();
@@ -160,18 +161,42 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
     public void createSavedLocation() {
+        MainActivity activity = (MainActivity) getActivity();
         System.out.println("Title: " + title + "\nLongitude: " + longitude + "\n  Latitude: " + lattiude);
         addCircle(CirclelatLng, 100);
+        activity.database.newLocation(activity.getLoggedInUser(),title,longitude,lattiude);
+        activity.updateAreas();
 
     }
 
-    @SuppressLint("MissingPermission")
+    public void addLocationsCircle(){
+        MainActivity activity = (MainActivity) getActivity();
+        ArrayList<LatLng> locations = activity.getUserLocLatLan();
+
+        for (int i = 0; i<locations.size();i++){
+
+            addCircle(locations.get(i),100);
+        }
+    }
+
+
+
+
     private void addGeofence(LatLng latLng, String title) {
 
-        Geofence geofence = geofenceHelper.getGeofence(title, latLng, 100, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT );
+        Geofence geofence = geofenceHelper.getGeofence(title, latLng, 100, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
         GeofencingRequest geofencingRequest = geofenceHelper.geofencingRequest(geofence);
 
+
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+               return;
+            } else {
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
+            }
+
+        }
         geofencingClient.addGeofences(geofencingRequest, pendingIntent)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override

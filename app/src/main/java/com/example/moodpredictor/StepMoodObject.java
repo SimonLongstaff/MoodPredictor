@@ -5,11 +5,13 @@ public class StepMoodObject {
     private int steps;
     private int mood;
     private String date;
+    private int uid;
 
-    public StepMoodObject(int steps, int mood, String date) {
+    public StepMoodObject(int steps, int mood, String date, int uid) {
         this.steps = steps;
         this.mood = mood;
         this.date = date;
+        this.uid = uid;
     }
 
     public int getSteps() {
@@ -34,6 +36,14 @@ public class StepMoodObject {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public int getUid() {
+        return uid;
+    }
+
+    public void setUid(int uid) {
+        this.uid = uid;
     }
 
     @Override

@@ -11,8 +11,6 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
-        System.out.println(geofencingEvent.getGeofenceTransition());
-        System.out.println("It's working!!!");
+        System.out.println("Broadcast Received");
     }
 }

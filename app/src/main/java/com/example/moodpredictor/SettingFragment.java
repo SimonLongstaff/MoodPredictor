@@ -62,6 +62,25 @@ public class SettingFragment extends Fragment {
             }
         });
 
+        Button debugHour = view.findViewById(R.id.DEBUG_addHour);
+        Button debugRehour = view.findViewById(R.id.DEBUG_removeHour);
+
+        debugHour.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int newTime = Integer.parseInt(activity.database.getOnTime(activity.getLoggedInUser(),activity.date)) + 3600;
+                activity.database.updateOnTime(activity.getLoggedInUser(),activity.date,newTime);
+            }
+        });
+
+        debugRehour.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int newTime = Integer.parseInt(activity.database.getOnTime(activity.getLoggedInUser(),activity.date)) - 3600;
+                activity.database.updateOnTime(activity.getLoggedInUser(),activity.date,newTime);
+            }
+        });
+
         return view;
 
     }

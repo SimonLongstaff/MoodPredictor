@@ -52,12 +52,14 @@ public class HomeFragment extends Fragment {
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                activity.updateAreas();
                 stepnum.setText(activity.getSteps());
-                shakenum.setText(activity.getShake());
+                shakenum.setText(JitterString());
                 onTimenum.setText(activity.getOnTime());
 
             }
         });
+
 
         Button predict = view.findViewById(R.id.buttonPredictMood);
         predict.setOnClickListener(new View.OnClickListener() {
@@ -67,18 +69,23 @@ public class HomeFragment extends Fragment {
                 switch (result){
                     case (1):
                         mood.setText("Very Poor");
+                        mood.setTextColor(getResources().getColor(R.color.red));
                         break;
                     case (2):
                         mood.setText("Poor");
+                        mood.setTextColor(getResources().getColor(R.color.orange));
                         break;
                     case (3):
                         mood.setText("Neutral");
+                        mood.setTextColor(getResources().getColor(R.color.grey));
                         break;
                     case (4):
                         mood.setText("Good");
+                        mood.setTextColor(getResources().getColor(R.color.lime));
                         break;
                     case (5):
                         mood.setText("Very Good");
+                        mood.setTextColor(getResources().getColor(R.color.green));
                         break;
 
                 }
@@ -86,7 +93,7 @@ public class HomeFragment extends Fragment {
         });
 
 
-        Button openMoodPopup = (Button) view.findViewById(R.id.set_mood);
+        Button openMoodPopup = view.findViewById(R.id.set_mood);
         openMoodPopup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,8 +112,6 @@ public class HomeFragment extends Fragment {
         final MainActivity activity = (MainActivity) getActivity();
 
         final String date = activity.getDate();
-        final int user = activity.getLoggedInUser();
-        final String mId = user + date;
 
         final PopupWindow popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
@@ -200,79 +205,34 @@ public class HomeFragment extends Fragment {
 
     }
 
-    //Build the step matrix for Bayesian prediction
-    public int[][] matrixBuilder() {
-        final MainActivity activity = (MainActivity) getActivity();
+    public String  JitterString(){
+        MainActivity mainActivity = (MainActivity) getActivity();
+        int shakebucket = mainActivity.getShakeBucketed();
+        String retval;
 
-        ArrayList<StepMoodObject> matrixBuilder = activity.database.getStepsMood(activity.getLoggedInUser());
-        System.out.println(matrixBuilder.size());
-
-        int[][] matrix = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
-
-        for (int i = 0; i < matrixBuilder.size(); i++) {
-            //System.out.println(i);
-            int steps = matrixBuilder.get(i).getSteps();
-            int mood = matrixBuilder.get(i).getMood() - 1;
-            int stepbucket = BayesHelper.stepBucket(steps);
-
-
-            matrix[mood][stepbucket]++;
+        switch (shakebucket){
+            case (0):
+                retval = "Very Low";
+             break;
+            case(1):
+                retval = "Low";
+                break;
+            case(2):
+                retval = "Moderate";
+                break;
+            case(3):
+                retval = "High";
+                break;
+            case(4):
+                retval = "Very High";
+                break;
+            case(5):
+                retval = "Extremly High";
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + shakebucket);
         }
-
-        System.out.println("Steps: " + Arrays.deepToString(matrix));
-        return matrix;
+        return retval;
     }
-
-    public int[][] shakeMatrixBuilder(){
-        final MainActivity activity = (MainActivity) getActivity();
-        ArrayList<ShakeMoodObject> matrixBuilder = activity.database.getShakeMood(activity.getLoggedInUser());
-
-        int[][] matrix = {{1,1,1,1,1,1},
-                {1,1,1,1,1,1},
-                {1,1,1,1,1,1},
-                {1,1,1,1,1,1},
-                {1,1,1,1,1,1},};
-
-        for (int i = 0; i < matrixBuilder.size(); i++) {
-            int shakes = matrixBuilder.get(i).getShakes();
-            int mood = matrixBuilder.get(i).getMood() - 1;
-            int shakeBucket = BayesHelper.shakeBucket(shakes);
-
-
-            matrix[mood][shakeBucket]++;
-        }
-        System.out.println("Shake: " + Arrays.deepToString(matrix));
-        return matrix;
-
-    }
-
-    public int[][] onTimeMAtrixBuilder(){
-        final MainActivity activity = (MainActivity) getActivity();
-        ArrayList<onTimeMoodObject> matrixBuilder = activity.database.getonTimeMood(activity.getLoggedInUser());
-
-        int[][] matrix = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},};
-
-        for (int i = 0; i< matrixBuilder.size(); i++){
-            System.out.println(i);
-            System.out.println(matrixBuilder.get(i).toString());
-            int onTime = matrixBuilder.get(i).getOnTime();
-            int mood = matrixBuilder.get(i).getMood()-1;
-            int onTimeBucket = BayesHelper.onTimeBucket(onTime);
-
-            matrix[mood][onTimeBucket]++;
-
-        }
-        return matrix;
-    }
-
-
 
 }

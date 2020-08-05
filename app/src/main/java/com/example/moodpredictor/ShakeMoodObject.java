@@ -5,11 +5,13 @@ public class ShakeMoodObject {
     private int Shakes;
     private int mood;
     private String Date;
+    private int uid;
 
-    public ShakeMoodObject(int shakes, int mood, String date) {
+    public ShakeMoodObject(int shakes, int mood, String date, int uid) {
         Shakes = shakes;
         this.mood = mood;
         Date = date;
+        this.uid = uid;
     }
 
     public int getShakes() {
@@ -34,5 +36,13 @@ public class ShakeMoodObject {
 
     public void setDate(String date) {
         Date = date;
+    }
+
+    public int getUid() {
+        return uid;
+    }
+
+    public void setUid(int uid) {
+        this.uid = uid;
     }
 }

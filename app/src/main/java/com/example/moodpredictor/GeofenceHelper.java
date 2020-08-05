@@ -22,8 +22,8 @@ public class GeofenceHelper extends ContextWrapper {
 
     public GeofencingRequest geofencingRequest(Geofence geofence) {
         return new GeofencingRequest.Builder()
-                .addGeofence(geofence)
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofence(geofence)
                 .build();
     }
 
@@ -33,23 +33,25 @@ public class GeofenceHelper extends ContextWrapper {
                 .setCircularRegion(latLng.latitude, latLng.longitude, radius)
                 .setRequestId(id)
                 .setTransitionTypes(transitionTypes)
-                .setLoiteringDelay(5000)
+                .setLoiteringDelay(1)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .build();
     }
-
 
     public PendingIntent getPendingIntent() {
 
         if (pendingIntent != null)
             return pendingIntent;
-        else {
-            Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
-            pendingIntent = PendingIntent.getBroadcast(this, 2607, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        }
 
+        Intent intent = new Intent(getApplicationContext(), GeofenceBroadcastReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return pendingIntent;
+
     }
+
+
+
+
 
     public String getErrorString(Exception e) {
         if (e instanceof ApiException) {

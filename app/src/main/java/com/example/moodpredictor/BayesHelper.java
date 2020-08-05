@@ -1,25 +1,26 @@
 package com.example.moodpredictor;
 
+import android.location.Location;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BayesHelper {
 
-
-
     //MultiBayes
 
-    public static int predictMoodShakeOnTime(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shakes, int steps, int onTime){
-        double tVS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,0);
-        double tS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,1);
-        double tN = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,2);
-        double tH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,3);
-        double tVH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,4);
+    public static int predictMoodShakeOnTime(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shakes, int steps, int onTime, LocMoodCalObject locMoodCalObject ){
+        double tVS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,0,locMoodCalObject.getLocMoodVs());
+        double tS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,1,locMoodCalObject.getLocMoodS());
+        double tN = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,2,locMoodCalObject.getLocMoodN());
+        double tH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,3,locMoodCalObject.getLocMoodH());
+        double tVH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,4,locMoodCalObject.getLocMoodVh());
 
-        double totalVSCombined = totalMatrixRow(stepsMatrix,10,0) + totalMatrixRow(shakeMatrix, 6,0) + totalMatrixRow(onTimeMatrix,16,0);
-        double totalSCombined = totalMatrixRow(stepsMatrix,10,1) + totalMatrixRow(shakeMatrix, 6,1) + totalMatrixRow(onTimeMatrix,16,1);
-        double totalNCombined = totalMatrixRow(stepsMatrix,10,2) + totalMatrixRow(shakeMatrix, 6,2) + totalMatrixRow(onTimeMatrix,16,2);
-        double totalHCombined = totalMatrixRow(stepsMatrix,10,3) + totalMatrixRow(shakeMatrix, 6,3) + totalMatrixRow(onTimeMatrix,16,3);
-        double totalVHCombined = totalMatrixRow(stepsMatrix,10,4) + totalMatrixRow(shakeMatrix, 6,4) + totalMatrixRow(onTimeMatrix,16,4);
+        double totalVSCombined = totalMatrixRow(stepsMatrix,10,0) + totalMatrixRow(shakeMatrix, 6,0) + totalMatrixRow(onTimeMatrix,16,0) + locMoodCalObject.getRowVs();
+        double totalSCombined = totalMatrixRow(stepsMatrix,10,1) + totalMatrixRow(shakeMatrix, 6,1) + totalMatrixRow(onTimeMatrix,16,1) + locMoodCalObject.getRowS();
+        double totalNCombined = totalMatrixRow(stepsMatrix,10,2) + totalMatrixRow(shakeMatrix, 6,2) + totalMatrixRow(onTimeMatrix,16,2)+ locMoodCalObject.getRowN();
+        double totalHCombined = totalMatrixRow(stepsMatrix,10,3) + totalMatrixRow(shakeMatrix, 6,3) + totalMatrixRow(onTimeMatrix,16,3)+ locMoodCalObject.getRowH();
+        double totalVHCombined = totalMatrixRow(stepsMatrix,10,4) + totalMatrixRow(shakeMatrix, 6,4) + totalMatrixRow(onTimeMatrix,16,4) + locMoodCalObject.getRowVh();
 
         double totalVsShake = totalMatrixRow(shakeMatrix,6,0);
         double totalSShake = totalMatrixRow(shakeMatrix,6,1);
@@ -40,13 +41,13 @@ public class BayesHelper {
         double totalVhonTime = totalMatrixRow(onTimeMatrix,16,4);
 
         double theta = tVS + tS + tN + tH + tVH;
-        double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5) + totalMatrix(onTimeMatrix,16,5);
+        double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5) + totalMatrix(onTimeMatrix,16,5) + locMoodCalObject.getTotal();
 
-        double predictVS = (((shakeMatrix[0][shakeBucket(shakes)]/totalVsShake) * (stepsMatrix[0][stepBucket(steps)]/totalVsSteps) * (onTimeMatrix[0][onTimeBucket(onTime)]/totalVsonTime))/theta)*(totalVSCombined/totalCombined);
-        double predictS = (((shakeMatrix[1][shakeBucket(shakes)]/totalSShake) * (stepsMatrix[1][stepBucket(steps)]/totalSSteps) * (onTimeMatrix[1][onTimeBucket(onTime)]/totalSonTime))/theta)*(totalSCombined/totalCombined);
-        double predictN = (((shakeMatrix[2][shakeBucket(shakes)]/totalNShake) * (stepsMatrix[2][stepBucket(steps)]/totalNSteps) * (onTimeMatrix[2][onTimeBucket(onTime)]/totalNonTime))/theta)*(totalNCombined/totalCombined);
-        double predictH = (((shakeMatrix[3][shakeBucket(shakes)]/totalHShake) * (stepsMatrix[3][stepBucket(steps)]/totalHSteps) * (onTimeMatrix[3][onTimeBucket(onTime)]/totalHonTime))/theta)*(totalHCombined/totalCombined);
-        double predictVH = (((shakeMatrix[4][shakeBucket(shakes)]/totalVhShake) * (stepsMatrix[4][stepBucket(steps)]/totalVhSteps) * (onTimeMatrix[4][onTimeBucket(onTime)]/totalVhonTime))/theta)*(totalVHCombined/totalCombined);
+        double predictVS = (((shakeMatrix[0][shakeBucket(shakes)]/totalVsShake) * (stepsMatrix[0][stepBucket(steps)]/totalVsSteps) * (onTimeMatrix[0][onTimeBucket(onTime)]/totalVsonTime) * locMoodCalObject.getLocMoodVs())/theta)*(totalVSCombined/totalCombined);
+        double predictS = (((shakeMatrix[1][shakeBucket(shakes)]/totalSShake) * (stepsMatrix[1][stepBucket(steps)]/totalSSteps) * (onTimeMatrix[1][onTimeBucket(onTime)]/totalSonTime) * locMoodCalObject.getLocMoodS())/theta)*(totalSCombined/totalCombined);
+        double predictN = (((shakeMatrix[2][shakeBucket(shakes)]/totalNShake) * (stepsMatrix[2][stepBucket(steps)]/totalNSteps) * (onTimeMatrix[2][onTimeBucket(onTime)]/totalNonTime) * locMoodCalObject.getLocMoodN())/theta)*(totalNCombined/totalCombined);
+        double predictH = (((shakeMatrix[3][shakeBucket(shakes)]/totalHShake) * (stepsMatrix[3][stepBucket(steps)]/totalHSteps) * (onTimeMatrix[3][onTimeBucket(onTime)]/totalHonTime) * locMoodCalObject.getLocMoodH())/theta)*(totalHCombined/totalCombined);
+        double predictVH = (((shakeMatrix[4][shakeBucket(shakes)]/totalVhShake) * (stepsMatrix[4][stepBucket(steps)]/totalVhSteps) * (onTimeMatrix[4][onTimeBucket(onTime)]/totalVhonTime) * locMoodCalObject.getLocMoodVh())/theta)*(totalVHCombined/totalCombined);
 
         double[] predict = new double[]{predictVS, predictS, predictN, predictH, predictVH};
         System.out.println("Final predict " + Arrays.toString(predict));
@@ -68,7 +69,7 @@ public class BayesHelper {
     }
 
 
-    public static double matrixTheta(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shake, int steps, int onTime, int mood){
+    public static double matrixTheta(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shake, int steps, int onTime, int mood, double locMood){
 
         double totalMoodShake = totalMatrixRow(shakeMatrix,6,mood);
         double totalMoodSteps = totalMatrixRow(stepsMatrix,10,mood);
@@ -77,7 +78,18 @@ public class BayesHelper {
         double totalMoodCombined = totalMoodShake + totalMoodSteps + totalOnTime;
         double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5) + totalMatrix(onTimeMatrix,16,5);
 
-        return ((shakeMatrix[mood][shakeBucket(shake)]/totalMoodShake) * (stepsMatrix[mood][stepBucket(steps)]/totalMoodSteps) * (onTimeMatrix[mood][onTimeBucket(onTime)]/totalOnTime)) * (totalMoodCombined/totalCombined);
+        return ((shakeMatrix[mood][shakeBucket(shake)]/totalMoodShake) * (stepsMatrix[mood][stepBucket(steps)]/totalMoodSteps) * (onTimeMatrix[mood][onTimeBucket(onTime)]/totalOnTime) * (locMood)) * (totalMoodCombined/totalCombined);
+    }
+
+
+
+
+
+    public static double locMoodCal(int[][] locMatrix, int mood, int locTime){
+        double totalMood = totalMatrixRow(locMatrix,10,mood);
+        int locBucket = dayBucket(locTime);
+        int value = locMatrix[mood][locBucket];
+        return value/totalMood;
     }
 
     //Returns the total sum of values in a step matrix
@@ -214,5 +226,39 @@ public class BayesHelper {
             onTimebucket =15;
 
         return onTimebucket;
+    }
+
+    public static int dayBucket(int visit){
+
+        int dayBucket = 0;
+
+        if (visit>=8640 && visit<17280){
+            dayBucket = 1;
+        }
+        if (visit>=17280 && visit<25920){
+            dayBucket = 2;
+        }
+        if (visit>=25920 && visit<34560){
+            dayBucket = 3;
+        }
+        if (visit>=34560 && visit<43200){
+            dayBucket = 4;
+        }
+        if (visit>=43200 && visit<51840){
+            dayBucket = 5;
+        }
+        if (visit>=51840 && visit<60480){
+            dayBucket = 6;
+        }
+        if (visit>=60480 && visit<69120){
+            dayBucket = 7;
+        }
+        if (visit>=69120 && visit<77760){
+            dayBucket = 8;
+        }
+        if (visit>=77760){
+            dayBucket = 9;
+        }
+        return dayBucket;
     }
 }

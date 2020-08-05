@@ -3,13 +3,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_height="450dp"
+        android:layout_marginTop="25dp"/>
+
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Place Holder, import Graph View"
         android:layout_gravity="center"
-        />
+        android:layout_marginTop="200dp"
+        android:layout_marginEnd="100dp"
+        android:text="Step History"
+        android:id="@+id/ButtonStepsHistory"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="200dp"
+        android:layout_marginEnd="-100dp"
+        android:text="Shake History"
+        android:id="@+id/ButtonShakeHistory"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="250dp"
+        android:text="Mood History"
+        android:id="@+id/ButtonMoodHistory"/>
 
 
 </FrameLayout>
