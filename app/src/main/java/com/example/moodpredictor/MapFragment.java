@@ -45,41 +45,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     GoogleMap mGoogleMap;
     MapView mMapView;
     View mView;
-
     double lattiude;
     double longitude;
     LatLng CirclelatLng;
     String title;
-    private int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
     private static final String TAG = "MapFragment";
 
-    //Geofence
-    private GeofencingClient geofencingClient;
-    private GeofenceHelper geofenceHelper;
-
-
-
     //Constructor
-    public MapFragment() {
-
-
-    }
+    public MapFragment() {    }
 
     //Set up
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         mView = inflater.inflate(R.layout.map_fragment, container, false);
-        geofenceHelper = new GeofenceHelper(getContext());
-        geofencingClient = LocationServices.getGeofencingClient(getContext());
         return mView;
     }
 
@@ -89,17 +72,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         final EditText enterTitle = (EditText) Objects.requireNonNull(getView().findViewById(R.id.addTitle));
 
-
         ImageButton add = Objects.requireNonNull(getView()).findViewById(R.id.addNewPlace);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 title = enterTitle.getText().toString();
                 createSavedLocation();
-                addGeofence(CirclelatLng, title);
             }
         });
-
 
         mMapView = mView.findViewById(R.id.map);
         if (mMapView != null) {
@@ -107,8 +87,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             mMapView.onResume();
             mMapView.getMapAsync(this);
         }
-
-
     }
 
     @Override
@@ -142,11 +120,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mGoogleMap.setMyLocationEnabled(true);
         } else {
+            int FINE_LOCATION_ACCESS_REQUEST_CODE = 10001;
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
         }
-
     }
-
 
 
     private void addCircle(LatLng latLng, float radius) {
@@ -178,43 +155,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             addCircle(locations.get(i),100);
         }
     }
-
-
-
-
-    private void addGeofence(LatLng latLng, String title) {
-
-        Geofence geofence = geofenceHelper.getGeofence(title, latLng, 100, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
-        PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
-        GeofencingRequest geofencingRequest = geofenceHelper.geofencingRequest(geofence);
-
-
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-               return;
-            } else {
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_LOCATION_ACCESS_REQUEST_CODE);
-            }
-
-        }
-        geofencingClient.addGeofences(geofencingRequest, pendingIntent)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "onSuccess: Geofence added");
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        String errorMsg = geofenceHelper.getErrorString(e);
-                        Log.d(TAG, "onFailure: " + errorMsg);
-                    }
-                });
-    }
-
-
 }
 
 

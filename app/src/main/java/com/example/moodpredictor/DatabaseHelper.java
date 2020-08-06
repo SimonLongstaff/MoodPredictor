@@ -569,6 +569,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return retval;
     }
 
+    public ArrayList<StepMoodObject> getStepsMoodDate(int uid) {
+
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<StepMoodObject> retval = new ArrayList<>();
+
+        String selectQuery = "SELECT userMoodTable.mood, userStepsTable.Steps, userStepsTable.Date, userSTepsTable.stepsID FROM " + USER_TABLE +
+                " JOIN " + MOOD_TABLE + " ON userMoodTable.UID=userTable.UID " +
+                "JOIN " + STEP_TABLE + "  ON userStepsTable.UID=userTable.UID " +
+                "AND userStepsTable.Date=userMoodTable.moodDate " +
+                " WHERE userTable.UID= " + uid +
+                " ORDER BY " + DATE + " ASC ";
+
+        Log.e("getStepsAndMood", selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        while (c.moveToNext()) {
+            StepMoodObject rv = new StepMoodObject(c.getInt(c.getColumnIndex(STEPS)), c.getInt(c.getColumnIndex(MOOD)), c.getString(c.getColumnIndex(DATE)), c.getInt(c.getColumnIndex(STEPS_ID)));
+            retval.add(rv);
+
+        }
+
+        int count = 1;
+        for (StepMoodObject element : retval) {
+            System.out.print(count + " ");
+            System.out.println(element);
+            count++;
+
+        }
+        c.close();
+        db.close();
+        return retval;
+    }
+
     public ArrayList<ShakeMoodObject> getShakeMood(int uid) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<ShakeMoodObject> retval = new ArrayList<>();
@@ -579,6 +612,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "AND userShakeTable.shakeDate=userMoodTable.moodDate " +
                 "WHERE userTable.UID= " + uid +
                 " ORDER BY " + SHAKE_ID;
+
+        Log.e("getShakeAndMood", selectQuery);
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        while (c.moveToNext()) {
+            ShakeMoodObject rv = new ShakeMoodObject(c.getInt(c.getColumnIndex(SHAKES)), c.getInt(c.getColumnIndex(MOOD)), c.getString(c.getColumnIndex(SHAKE_DATE)), c.getInt(c.getColumnIndex(SHAKE_ID)));
+            retval.add(rv);
+        }
+
+        c.close();
+        db.close();
+        return retval;
+
+    }
+
+    public ArrayList<ShakeMoodObject> getShakeMoodDate(int uid) {
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<ShakeMoodObject> retval = new ArrayList<>();
+
+        String selectQuery = "SELECT userMoodTable.mood, userShakeTable.shakes, userShakeTable.shakeDate, userShakeTable.shakeID FROM " + USER_TABLE +
+                " JOIN " + MOOD_TABLE + " ON userMoodTable.UID=userTable.UID " +
+                "JOIN " + SHAKE_TABLE + "  ON userShakeTable.UID=userTable.UID " +
+                "AND userShakeTable.shakeDate=userMoodTable.moodDate " +
+                "WHERE userTable.UID= " + uid +
+                " ORDER BY " + SHAKE_DATE;
 
         Log.e("getShakeAndMood", selectQuery);
         Cursor c = db.rawQuery(selectQuery, null);
@@ -646,7 +704,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int insert = 0;
 
         Calendar c = Calendar.getInstance();
-        c.set(Calendar.YEAR, 2000);
+        c.set(Calendar.YEAR, 2017);
         c.set(Calendar.MONTH, 0);
         c.set(Calendar.DAY_OF_MONTH, 1);
         Date start = c.getTime();
@@ -660,24 +718,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         for (int i = 0; i < 500; i++) {
 
             String date = randDate(start, end);
-            int steps = new Random().nextInt(11000) + 1;
-            int mood = new Random().nextInt(5) + 1;
-            int shake = new Random().nextInt(11000) + 1;
-            int onTime = new Random().nextInt(86000) + 1;
+            if (!stepIDExists(date, uid)) {
+                int steps = new Random().nextInt(11000) + 1;
+                int mood = new Random().nextInt(5) + 1;
+                int shake = new Random().nextInt(11000) + 1;
+                int onTime = new Random().nextInt(86000) + 1;
 
-            newMood(uid, mood, date);
-            insertNewStepDay(steps, uid, date);
-            newOntime(uid, date, onTime);
-            newShake(uid, date, shake);
-            int time = 86500;
-            int time1 = new Random().nextInt(time);
-            time -= time1;
-            int time2 = new Random().nextInt(time);
-            time -= time2;
-            int time3 = new Random().nextInt(time);
-            newVisit(5,time1,date);
-            newVisit(6,time2,date);
-            newVisit(7,time3,date);
+                newMood(uid, mood, date);
+                insertNewStepDay(steps, uid, date);
+                newOntime(uid, date, onTime);
+                newShake(uid, date, shake);
+                int time = 86500;
+                int time1 = new Random().nextInt(time);
+                time -= time1;
+                int time2 = new Random().nextInt(time);
+                time -= time2;
+                int time3 = new Random().nextInt(time);
+                newVisit(5, time1, date);
+                newVisit(6, time2, date);
+                newVisit(7, time3, date);
+            }
         }
 
         insert++;
@@ -691,6 +751,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .current()
                 .nextLong(startMillis, endMillis);
 
-        return new SimpleDateFormat("dd-MM-yyyy").format(new Date(randomMillisSinceEpoch));
+        return new SimpleDateFormat("yyyy-MM-dd").format(new Date(randomMillisSinceEpoch));
     }
 }

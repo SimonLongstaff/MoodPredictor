@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navi_predict"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_remove_red_eye_24"
+        android:title="Predict"/>
+    <item
+        android:id="@+id/navi_setMood"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_mood_24"
+        android:title="@string/how_are_you_today"/>
+    <item
+        android:id="@+id/navi_refresh"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_refresh_24"
+        android:title="@string/refresh"/>
+
+</menu>

@@ -1,8 +1,5 @@
 package com.example.moodpredictor;
 
-import android.location.Location;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BayesHelper {

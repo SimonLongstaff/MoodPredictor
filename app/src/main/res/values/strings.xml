@@ -16,7 +16,7 @@
     <string name="Current_Mood_Prediction">Current Mood Prediction(PH)</string>
     <string name="steps_today">Steps Today:</string>
     <string name="steps">step count(PH)</string>
-    <string name="screen_on_time">Current Screen on Time:</string>
+    <string name="screen_on_time">Today\'s Screen on Time:</string>
     <string name="screenTime">Screen Time (PH)</string>
 
     //Map

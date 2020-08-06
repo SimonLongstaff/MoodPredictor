@@ -13,13 +13,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import androidx.fragment.app.Fragment;
+
 public class ScreenTimeBroadcastReceiver extends BroadcastReceiver {
 
     private static final String TAG = "ScreenTimeBroadcastRece";
     private long startTimer;
     private long screenOnTime;
     private int currentUser;
-    private String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+    private String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
     DatabaseHelper databaseHelper;
 
 
@@ -34,6 +36,7 @@ public class ScreenTimeBroadcastReceiver extends BroadcastReceiver {
             startTimer = System.currentTimeMillis();
         }
         else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)){
+
             long endTimer =System.currentTimeMillis();
             long screenOnTimeSingle = endTimer - startTimer;
             screenOnTime = Long.parseLong(databaseHelper.getOnTime(currentUser,date));
@@ -63,4 +66,6 @@ public class ScreenTimeBroadcastReceiver extends BroadcastReceiver {
     public void setDatabaseHelper(DatabaseHelper setdatabaseHelper){
         databaseHelper=setdatabaseHelper;
     }
+
+
 }

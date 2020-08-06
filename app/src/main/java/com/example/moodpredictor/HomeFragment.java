@@ -1,23 +1,28 @@
 package com.example.moodpredictor;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.Switch;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import static androidx.core.content.ContextCompat.getSystemService;
 
 public class HomeFragment extends Fragment {
 
+    Chronometer chronometer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,13 +45,14 @@ public class HomeFragment extends Fragment {
         stepnum.setText(activity.getSteps());
 
         final TextView shakenum = view.findViewById(R.id.numShake);
-        shakenum.setText(activity.getShake());
-
-        final TextView onTimenum = view.findViewById(R.id.numScreenOnTime);
-        onTimenum.setText(activity.getOnTime());
+        shakenum.setText(JitterString());
 
         final TextView mood = view.findViewById(R.id.TextMoodPredict);
 
+        final Chronometer chronometer = view.findViewById(R.id.timer);
+        System.out.println("Time: " + activity.database.getOnTime(activity.getLoggedInUser(),activity.getDate()));
+        chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(),activity.getDate()))*1000)));
+        chronometer.start();
 
         Button refresh = (Button) view.findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +61,9 @@ public class HomeFragment extends Fragment {
                 activity.updateAreas();
                 stepnum.setText(activity.getSteps());
                 shakenum.setText(JitterString());
-                onTimenum.setText(activity.getOnTime());
+                chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(),activity.getDate()))*1000)));
+                chronometer.start();
+
 
             }
         });
@@ -92,7 +100,6 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
         Button openMoodPopup = view.findViewById(R.id.set_mood);
         openMoodPopup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,8 +109,6 @@ public class HomeFragment extends Fragment {
         });
 
         return view;
-
-
     }
 
     public void showPopup(View view) {
@@ -204,6 +209,21 @@ public class HomeFragment extends Fragment {
         popupWindow.showAtLocation(view, Gravity.CENTER_HORIZONTAL, 0, view.getHeight());
 
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Chronometer chronometer = getView().findViewById(R.id.timer);
+        chronometer.stop();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Chronometer chronometer = getView().findViewById(R.id.timer);
+        chronometer.start();
+    }
+
 
     public String  JitterString(){
         MainActivity mainActivity = (MainActivity) getActivity();

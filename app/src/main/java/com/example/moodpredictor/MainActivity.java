@@ -20,6 +20,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.view.MenuItem;
 import android.widget.Switch;
 
@@ -33,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 public class MainActivity extends AppCompatActivity
         implements
         NavigationView.OnNavigationItemSelectedListener,
@@ -43,7 +46,7 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout drawer;
 
     //Var -----------------------------------------------------------------------------------------------------------------------------------------------------
-    String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+    String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
     DatabaseHelper database = new DatabaseHelper(this);
 
     //Location-----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity
         lockfilter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(screenTimeBroadcastReceiver, lockfilter);
         screenTimeBroadcastReceiver.setLoggedinUser(getLoggedInUser());
-        screenTimeBroadcastReceiver.setDatabaseHelper(database);
+        screenTimeBroadcastReceiver.setDatabaseHelper(database);;
 
 
         //Location-----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -321,10 +324,6 @@ public class MainActivity extends AppCompatActivity
         return database.getSteps(date, getLoggedInUser());
     }
 
-    public String getShake() {
-
-        return database.getShake(loggedInUID, date);
-    }
 
     public int getShakeBucketed(){
         return BayesHelper.shakeBucket(Integer.parseInt(database.getShake(getLoggedInUser(),getDate())));

@@ -1,5 +1,6 @@
 package com.example.moodpredictor;
 
+import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,10 +8,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
+import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.PointsGraphSeries;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import androidx.fragment.app.Fragment;
 
@@ -32,18 +38,27 @@ public class HistoryFragment extends Fragment {
         stepHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMood(activity.getLoggedInUser());
+                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMoodDate(activity.getLoggedInUser());
                 DataPoint[] retval = new DataPoint[stepsMoodList.size()];
                 for (int i =0; i<stepsMoodList.size();i++){
                     int steps = stepsMoodList.get(i).getSteps();
-                    int id = stepsMoodList.get(i).getUid();
-                    DataPoint rv = new DataPoint(id,steps);
+                    Date date = new Date();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    try {
+                        date = format.parse(stepsMoodList.get(i).getDate());
+                    }catch (Exception e) {
+                        e.printStackTrace();}
+                    DataPoint rv = new DataPoint(date,steps);
                     retval[i] = rv;
                 }
                 LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<>(retval);
                 graphView.removeAllSeries();
                 graphView.setTitle("Step History");
                 graphView.addSeries(graphSeries);
+                graphView.getViewport().setScalable(true);
+                graphView.getViewport().setYAxisBoundsManual(true);
+                graphView.getViewport().setMaxY(15000);
+                graphView.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(activity));
             }
         });
 
@@ -51,18 +66,27 @@ public class HistoryFragment extends Fragment {
         shakeHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<ShakeMoodObject> shakeMood = activity.database.getShakeMood(activity.getLoggedInUser());
+                ArrayList<ShakeMoodObject> shakeMood = activity.database.getShakeMoodDate(activity.getLoggedInUser());
                 DataPoint[] retval = new DataPoint[shakeMood.size()];
                 for (int i =0; i<shakeMood.size();i++){
                     int shakes = shakeMood.get(i).getShakes();
-                    int id = shakeMood.get(i).getUid();
-                    DataPoint rv = new DataPoint(id,shakes);
+                    Date date = new Date();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    try {
+                        date = format.parse(shakeMood.get(i).getDate());
+                    }catch (Exception e) {
+                        e.printStackTrace();}
+                    DataPoint rv = new DataPoint(date,shakes);
                     retval[i] = rv;
                 }
                 LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<>(retval);
                 graphView.removeAllSeries();
                 graphView.setTitle("Shake History");
                 graphView.addSeries(graphSeries);
+                graphView.getViewport().setScalable(true);
+                graphView.getViewport().setYAxisBoundsManual(true);
+                graphView.getViewport().setMaxY(15000);
+                graphView.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(activity));
             }
         });
 
@@ -70,21 +94,28 @@ public class HistoryFragment extends Fragment {
         moodHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMood(activity.getLoggedInUser());
+                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMoodDate(activity.getLoggedInUser());
                 DataPoint[] retval = new DataPoint[stepsMoodList.size()];
                 for (int i =0; i<stepsMoodList.size();i++){
                     int mood = stepsMoodList.get(i).getMood();
-                    int id = stepsMoodList.get(i).getUid();
-                    DataPoint rv = new DataPoint(id,mood);
+                    Date date = new Date();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    try {
+                        date = format.parse(stepsMoodList.get(i).getDate());
+                    }catch (Exception e) {
+                        e.printStackTrace();}
+                    DataPoint rv = new DataPoint(date,mood);
                     retval[i] = rv;
                 }
                 LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<>(retval);
                 graphView.removeAllSeries();
                 graphView.setTitle("Mood History");
                 graphView.addSeries(graphSeries);
+                graphView.getViewport().setScalable(true);
+                graphView.getViewport().setYAxisBoundsManual(true);
+                graphView.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(activity));
             }
         });
-
 
 
         return view;
