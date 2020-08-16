@@ -1,31 +1,16 @@
 package com.example.moodpredictor;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentManager;
-
-import android.annotation.SuppressLint;
-import android.app.PendingIntent;
-import android.content.Context;
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.view.MenuItem;
-import android.widget.Switch;
+import android.widget.Toast;
 
-import com.google.android.gms.location.GeofencingClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.navigation.NavigationView;
 
@@ -34,82 +19,67 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import static androidx.core.content.ContextCompat.getSystemService;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 public class MainActivity extends AppCompatActivity
         implements
-        NavigationView.OnNavigationItemSelectedListener,
-        SensorEventListener,
-        StepListener {
+        NavigationView.OnNavigationItemSelectedListener {
 
-    //Drawers -----------------------------------------------------------------------------------------------------------------------------------------------------
+    //Variables
     private DrawerLayout drawer;
-
-    //Var -----------------------------------------------------------------------------------------------------------------------------------------------------
     String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
     DatabaseHelper database = new DatabaseHelper(this);
-
-    //Location-----------------------------------------------------------------------------------------------------------------------------------------------------
-
+    public static final String CHANNEL_ID = "exampleServiceChannel";
     ArrayList<Location> userLocations;
-    private static final int Geo_Radius = 50;
-    Location currentLocation = null;
-    double startTimer;
-    double endTimer;
-
-    //Sensors-----------------------------------------------------------------------------------------------------------------------------------------------------
-    private SensorManager sensorManager;
-    private StepDetector stepDetector;
-    private Sensor accel;
-    private int Stepsnum;
-    private int shakeNum;
-
-    //User -----------------------------------------------------------------------------------------------------------------------------------------------------
     private int loggedInUID = 1;
-    private String loggedInName;
 
-
-    //Debug User -----------------------------------------------------------------------------------------------------------------------------------------------------
-    User debug = new User("Simon");
-
-
-    @SuppressLint("MissingPermission")
+    /**
+     * Initial launch
+     * @param savedInstanceState -
+     */
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        createNotificationChannel();
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 2);
+        }
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.FOREGROUND_SERVICE}, 3);
+        }
+
+        //Launches the services that keep track of stats
+        Intent intent = new Intent(this, listeners.class);
+        intent.putExtra("Date", getDate());
+        intent.putExtra("uID", String.valueOf(getLoggedInUser()));
+        startForegroundService(intent);
+
+        startForegroundService(new Intent(this, stepsListener.class));
 
 
-        //Step Sensor setup-----------------------------------------------------------------------------------------------------------------------------------------------------
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        Sensor stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-        sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        stepDetector = new StepDetector();
-        stepDetector.registerListener(this);
-        Stepsnum = 0;
-        sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
-
-
-        //Screen on-----------------------------------------------------------------------------------------------------------------------------------------------------
-
-        ScreenTimeBroadcastReceiver screenTimeBroadcastReceiver = new ScreenTimeBroadcastReceiver();
-        IntentFilter lockfilter = new IntentFilter();
-        lockfilter.addAction(Intent.ACTION_SCREEN_ON);
-        lockfilter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(screenTimeBroadcastReceiver, lockfilter);
-        screenTimeBroadcastReceiver.setLoggedinUser(getLoggedInUser());
-        screenTimeBroadcastReceiver.setDatabaseHelper(database);;
-
-
-        //Location-----------------------------------------------------------------------------------------------------------------------------------------------------
-
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, (android.location.LocationListener) locationListener);
-        userLocations = new ArrayList<>();
-        updateAreas();
-
-        //Navigation Bar setup-----------------------------------------------------------------------------------------------------------------------------------------------------
+        //Navigation Bar setup
         Toolbar toolbar = findViewById(R.id.toolbar);
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -118,51 +88,46 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        //User-----------------------------------------------------------------------------------------------------------------------------------------------------
-        //database.insertUser(debug);
-        //database.dummyData(1);
-        database.newShake(1, date, 1000);
-        database.newOntime(1, date, 24000);
-        SettingUser();
 
-        //Create Steps database-----------------------------------------------------------------------------------------------------------------------------------------------------
-        if (database.stepIDExists(date, getLoggedInUser())) {
-            database.insertNewStepDay(0, loggedInUID, date);
+        //Check if user exists in the database, launch the new user screen if they do not
+        if (database.getLoggedIn() == 0) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new WelcomeFragment()).commit();
+        } else {
+
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
+            }
         }
 
-
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
-        }
     }
 
-
-    //User-----------------------------------------------------------------------------------------------------------------------------------------------------
+    /**
+     * Get current user
+     * @return - user id
+     */
     public int getLoggedInUser() {
         return loggedInUID;
     }
 
+    /**
+     * Sets the current logged in user
+     * @param loggedInUser - user
+     */
     public void setLoggedInUser(int loggedInUser) {
         this.loggedInUID = loggedInUser;
     }
 
-    public void SettingUser() {
-        String user = database.getLoggedIn(loggedInUID);
-        System.out.println(user);
-        loggedInName = user;
-    }
-
-    public String getLoggedInName() {
-        return loggedInName;
-    }
-
+    /**
+     * Gets current date
+     * @return - today's date
+     */
     public String getDate() {
         return date;
     }
 
-
-    //Navigation Bar-----------------------------------------------------------------------------------------------------------------------------------------------------
-
+    /**
+     * Navigation back
+     */
     @Override
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -171,6 +136,11 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
     }
 
+    /**
+     * Navigation menu selections
+     * @param item
+     * @return
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -193,21 +163,30 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    //Location-----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Updates the user area list from the database
+     */
     public void updateAreas() {
         userLocations = database.getLocations(getLoggedInUser());
-
     }
 
-    public ArrayList<LatLng> getUserLocLatLan(){
+    /**
+     * Generates a list of LatLngs for user locations from database
+     * @return - list of Latlngs of locations
+     */
+    public ArrayList<LatLng> getUserLocLatLan() {
         ArrayList<LatLng> retval = new ArrayList<>();
-        for (int i = 0; i<userLocations.size();i++){
+        for (int i = 0; i < userLocations.size(); i++) {
             retval.add(new LatLng(userLocations.get(i).getLatitude(), userLocations.get(i).getLongitude()));
         }
         return retval;
     }
 
+    /**
+     * Generates a list of the names of user locations from the database
+     * @return - names of all user locations
+     */
     public ArrayList<String> getUserLocations() {
         ArrayList<String> retval = new ArrayList<>();
         for (int i = 0; i < userLocations.size(); i++) {
@@ -216,135 +195,74 @@ public class MainActivity extends AppCompatActivity
         return retval;
     }
 
-    android.location.LocationListener locationListener = new android.location.LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            double latitude = location.getLatitude();
-            double longitude = location.getLatitude();
-            System.out.println("Lat: " + latitude + " Long: " + longitude);
-            if (currentLocation != null) {
-                if (location.distanceTo(currentLocation) > Geo_Radius) {
-                    endTimer = System.currentTimeMillis();
-                    int time = (int) ((endTimer - startTimer) / 1000);
-                    int lID = database.getLocID(getLoggedInUser(), currentLocation.getProvider());
-                    if (database.visitExists(lID, date)) {
-
-                        database.updateVisit(lID, time, date);
-                    } else
-                        database.newVisit(lID, time, date);
-                    currentLocation = null;
+    /**
+     * Function to display a toast when permission is granted
+     * @param requestCode -
+     * @param permissions -
+     * @param grantResults -
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                for (int i = 0; i < userLocations.size(); i++) {
-                    if (location.distanceTo(userLocations.get(i)) < Geo_Radius) {
-                        currentLocation = userLocations.get(i);
-                        startTimer = System.currentTimeMillis();
-                    }
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if (requestCode == 2) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
             }
         }
 
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String s) {
-
-        }
-    };
-
-    //Screen on-----------------------------------------------------------------------------------------------------------------------------------------------------
-
-    public String getOnTime() {
-        int seconds;
-        int minutes = 0;
-        int hours = 0;
-
-        int onTime = Integer.parseInt(database.getOnTime(getLoggedInUser(), date));
-        while (onTime >= 60) {
-            minutes++;
-            onTime = onTime - 60;
-            if (minutes > 60) {
-                hours++;
-                minutes = minutes - 60;
+        if (requestCode == 3) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.FOREGROUND_SERVICE) == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
             }
         }
 
-        seconds = onTime;
-
-        return hours + " Hours " + minutes + " minutes " + seconds + " seconds ";
-
-    }
 
 
-    //Sensor updates-----------------------------------------------------------------------------------------------------------------------------------------------------
-    @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-
-        switch (sensorEvent.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER: {
-                stepDetector.updateAccel(
-                        sensorEvent.timestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
-                break;
-
-            }
-
-            case Sensor.TYPE_STEP_COUNTER: {
-                if (Stepsnum < 1)
-                    Stepsnum = (int) sensorEvent.values[0];
-
-                Stepsnum = (int) sensorEvent.values[0] - Stepsnum;
-                database.updateSteps(date, getLoggedInUser(), Stepsnum);
-                System.out.println("New Steps registered");
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-    }
-
-    @Override
-    public void step(long timeNs) {
-        Stepsnum++;
-        System.out.println("Old Step registered");
-        database.updateSteps(date, getLoggedInUser(), Stepsnum);
 
     }
 
+    /**
+     * Returns the number of steps for the current date
+     * @return - the number of steps for the current date
+     */
     public String getSteps() {
         return database.getSteps(date, getLoggedInUser());
     }
 
-
-    public int getShakeBucketed(){
-        return BayesHelper.shakeBucket(Integer.parseInt(database.getShake(getLoggedInUser(),getDate())));
+    /**
+     * Returns the bucketed value of the shakes for the current date
+     * @return - shake value bucketed
+     */
+    public int getShakeBucketed() {
+        return BayesHelper.shakeBucket(Integer.parseInt(database.getShake(getLoggedInUser(), getDate())));
 
     }
 
-    @Override
-    public void shake(long timeNs) {
-        System.out.println("New Shake");
-        if (database.shakeExists(getLoggedInUser(), date)) {
-            shakeNum++;
-            database.updateShake(getLoggedInUser(), date, shakeNum);
-        } else {
-            database.newShake(loggedInUID, date, 1);
-            shakeNum = 1;
-        }
-    }
-
-    //Prediction-----------------------------------------
-
-    //Build the step matrix for Bayesian prediction
+    /**
+     * Build a matrix of step and mood values for Bayesian prediction
+     * @return - a matrix of steps per mood
+     */
     public int[][] stepsMatrixBuilder() {
 
         ArrayList<StepMoodObject> matrixBuilder = database.getStepsMood(getLoggedInUser());
@@ -370,6 +288,10 @@ public class MainActivity extends AppCompatActivity
         return matrix;
     }
 
+    /**
+     * Builds a matrix of shake and mood values for prediction
+     * @return - A matrix with values of shakes per mood
+     */
     public int[][] shakeMatrixBuilder() {
         ArrayList<ShakeMoodObject> matrixBuilder = database.getShakeMood(getLoggedInUser());
 
@@ -392,6 +314,10 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Builds the matrix of screen on time and mood for prediction
+     * @return - matrix of values of screen on time per mood
+     */
     public int[][] onTimeMAtrixBuilder() {
 
         ArrayList<onTimeMoodObject> matrixBuilder = database.getonTimeMood(getLoggedInUser());
@@ -415,6 +341,11 @@ public class MainActivity extends AppCompatActivity
         return matrix;
     }
 
+    /**
+     * Builds a matrix with time spent at location and mood values for prediction
+     * @param lID - the location ID
+     * @return - Matrix of values of time spent at location per mood
+     */
     public int[][] locMatrixBuilder(int lID) {
 
         ArrayList<LocationMoodObject> matrixBuilder = database.getLocMood(lID);
@@ -437,6 +368,16 @@ public class MainActivity extends AppCompatActivity
         return matrix;
     }
 
+    /** Location and mood value calculations
+     *  Builds a matrix for each location the user has taking in the time visited each day and the mood
+     *  Gets the total for each mood from each location matrix and adds them to a running total for the current day
+     *  Does the same for each location inclusive of all dates in database
+     *
+     *  Creates an object with all these variables that can be handed off to prediction function.
+     *
+     * @param date - todays date
+     * @return - an object that includes all the details of the location dated needed for the prediction of mood.
+     */
     public LocMoodCalObject locMoodCalculation(String date) {
         updateAreas();
         double locMoodVs = 0;
@@ -494,8 +435,11 @@ public class MainActivity extends AppCompatActivity
         return retval;
     }
 
-
-
+    /**
+     * Generates the matrices and variables needed to predict mood
+     * Sends these values along with today's current values of steps, shakiness and screen on time to the prediction function.
+     * @return - returns the prediction as a integer between 1 and 5
+     */
     public int prediction() {
         int[][] matrixSteps = stepsMatrixBuilder();
         int[][] matrixShake = shakeMatrixBuilder();
@@ -516,6 +460,19 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-
+    /**
+     * Creates a notification channel for foreground service use.
+     */
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Example Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
 }
 

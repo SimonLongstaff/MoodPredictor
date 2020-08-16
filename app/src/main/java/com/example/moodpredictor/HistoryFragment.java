@@ -1,13 +1,19 @@
 package com.example.moodpredictor;
 
+import android.graphics.Color;
 import android.icu.util.Calendar;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LabelFormatter;
+import com.jjoe64.graphview.ValueDependentColor;
+import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
@@ -38,7 +44,7 @@ public class HistoryFragment extends Fragment {
         stepHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMoodDate(activity.getLoggedInUser());
+                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMoodDate(activity.database.getLoggedIn());
                 DataPoint[] retval = new DataPoint[stepsMoodList.size()];
                 for (int i =0; i<stepsMoodList.size();i++){
                     int steps = stepsMoodList.get(i).getSteps();
@@ -66,7 +72,7 @@ public class HistoryFragment extends Fragment {
         shakeHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<ShakeMoodObject> shakeMood = activity.database.getShakeMoodDate(activity.getLoggedInUser());
+                ArrayList<ShakeMoodObject> shakeMood = activity.database.getShakeMoodDate(activity.database.getLoggedIn());
                 DataPoint[] retval = new DataPoint[shakeMood.size()];
                 for (int i =0; i<shakeMood.size();i++){
                     int shakes = shakeMood.get(i).getShakes();
@@ -94,7 +100,7 @@ public class HistoryFragment extends Fragment {
         moodHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMoodDate(activity.getLoggedInUser());
+                ArrayList<StepMoodObject> stepsMoodList = activity.database.getStepsMoodDate(activity.database.getLoggedIn());
                 DataPoint[] retval = new DataPoint[stepsMoodList.size()];
                 for (int i =0; i<stepsMoodList.size();i++){
                     int mood = stepsMoodList.get(i).getMood();
@@ -109,11 +115,56 @@ public class HistoryFragment extends Fragment {
                 }
                 LineGraphSeries<DataPoint> graphSeries = new LineGraphSeries<>(retval);
                 graphView.removeAllSeries();
+                graphView.getViewport().setYAxisBoundsManual(false);
                 graphView.setTitle("Mood History");
                 graphView.addSeries(graphSeries);
                 graphView.getViewport().setScalable(true);
-                graphView.getViewport().setYAxisBoundsManual(true);
                 graphView.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(activity));
+            }
+        });
+
+
+        Button locHistory = view.findViewById(R.id.ButtonLocHistory);
+        locHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final ArrayList<String> userLocations = activity.getUserLocations();
+                DataPoint[] retval = new DataPoint[userLocations.size()];
+                for (int i =0; i<userLocations.size();i++){
+                    int mood = 0;
+                    int moodcount = 0;
+                    int lID = activity.database.getLocID(1,userLocations.get(i));
+                    ArrayList<LocationMoodObject> locmood = activity.database.getLocMood(lID);
+                    for (int j = 0; j<locmood.size();j++){
+                        moodcount = moodcount + locmood.get(j).mood;
+                    }
+                    mood = moodcount/locmood.size();
+                    DataPoint rv = new DataPoint(i,mood);
+                    retval[i] = rv;
+                }
+                BarGraphSeries<DataPoint> graphSeries = new BarGraphSeries<>(retval);
+                graphSeries.setSpacing(50);
+                graphSeries.setDrawValuesOnTop(true);
+                graphSeries.setValuesOnTopColor(Color.RED);
+                graphView.clearFocus();
+                graphView.removeAllSeries();
+                graphView.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                    @Override
+                    public String formatLabel(double value, boolean isValueX) {
+                        return String.valueOf(value);
+                    }
+                });
+                graphView.getViewport().setYAxisBoundsManual(true);
+                graphView.getViewport().setScalable(false);
+                graphView.getViewport().setMaxY(5);
+                graphView.setTitle("Location History");
+                graphView.addSeries(graphSeries);
+                graphSeries.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+                    @Override
+                    public int get(DataPoint data) {
+                        return Color.rgb((int) data.getX()*255/4, (int) Math.abs(data.getY()*255/6), 100);
+                    }
+                });
             }
         });
 

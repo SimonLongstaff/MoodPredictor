@@ -7,7 +7,7 @@ public class StepDetector {
 
     // Step threshold sensitivity
     private static final float STEP_THRESHOLD = 100f;
-    private static final float SHAKE_THRESHOLD = 10f;
+    private static final float SHAKE_THRESHOLD = 50f;
 
     //Step Delay sensitivity (nanoseconds)
     //Currently set to : 0.25 seconds
@@ -66,7 +66,7 @@ public class StepDetector {
             lastStepTimeNs = timeNs;
         }
 
-        if (velocityEstimate > SHAKE_THRESHOLD && oldVelocityEstimate <= SHAKE_THRESHOLD
+        else if (velocityEstimate > SHAKE_THRESHOLD && oldVelocityEstimate <= SHAKE_THRESHOLD
                 && (timeNs - lastShakeTimeNs > SHAKE_DELAY_NS)) {
             listener.shake(timeNs);
             lastShakeTimeNs = timeNs;

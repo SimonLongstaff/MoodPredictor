@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
+import android.nfc.Tag;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
@@ -32,6 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //Table Names
     private static final String USER_TABLE = "userTable";
+    public static final String LOGGEDIN_TABLE = "userLoggedInTable";
     private static final String STEP_TABLE = "userStepsTable";
     private static final String MOOD_TABLE = "userMoodTable";
     private static final String SHAKE_TABLE = "userShakeTable";
@@ -79,6 +81,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_USER = "CREATE TABLE " + USER_TABLE + "(" + UID +
             " INTEGER PRIMARY KEY AUTOINCREMENT," + NAME + " TEXT" + ")";
 
+    //Logged in Table
+    private static final String CREATE_LOGGEDIN = "CREATE TABLE " + LOGGEDIN_TABLE + "(" + UID + " INTEGER )";
+
     //Mood Table
     private static final String CREATE_TABLE_MOOD = "CREATE TABLE " + MOOD_TABLE + " (" + MID +
             " INTEGER PRIMARY KEY AUTOINCREMENT ," + MOODDATE + " TEXT," + MOOD + " INTEGER," + UID + " INTEGER" + ")";
@@ -113,12 +118,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_USER);
+        db.execSQL(CREATE_LOGGEDIN);
         db.execSQL(CREATE_TABLE_MOOD);
         db.execSQL(CREATE_TABLE_STEPS);
         db.execSQL(CREATE_TABLE_SHAKE);
         db.execSQL(CREATE_TABLE_ONTIME);
         db.execSQL(CREATE_TABLE_LOCATION);
         db.execSQL(CREATE_TABLE_VISIT);
+        this.defaultLoggedIn(db);
 
     }
 
@@ -137,6 +144,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    private static DatabaseHelper instance;
+
+    public static DatabaseHelper getInstance(Context context){
+        if ( instance == null ){
+            instance = new DatabaseHelper(context);
+        }
+        return instance;
+    }
+
+
     //USERS -----------------------------------------------------------------------------------------------------------------------------------------------------
 
     public void insertUser(User user) {
@@ -148,18 +165,68 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(USER_TABLE, null, cv);
     }
 
+    public int getuID(String name){
+        Cursor c = null;
+        int retval = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + USER_TABLE + " WHERE " + NAME + " = '" + name + "'";
+        Log.e(TAG, "Getting uID");
+        try {
+            c = db.rawQuery(selectQuery, null);
+            c.moveToFirst();
+            retval =  c.getInt(c.getColumnIndex(UID));
+            c.close();
+            db.close();
+
+        } catch (Exception ex) {
+            c.close();
+            System.out.println(ex.getMessage());
+        }
+        return retval;
+    }
+
     public String getLoggedIn(int UID) {
         SQLiteDatabase db = this.getReadableDatabase();
+        String retval = "Not Found";
 
         String selectQuery = "SELECT * FROM " + USER_TABLE + " WHERE " + "UID" + "=" + UID;
 
         Log.e("SelectUser", selectQuery);
-        Cursor c = db.rawQuery(selectQuery, null);
+        Cursor c = null;
 
-        if (c != null)
-            c.moveToFirst();
-        return c.getString(c.getColumnIndex(NAME));
+        try {
+            c = db.rawQuery(selectQuery, null);
+            if (c != null)
+                c.moveToFirst();
+            retval = c.getString(c.getColumnIndex(NAME));
+        }catch (Exception ex) {
+            c.close();
+            System.out.println(ex.getMessage());
+        }
+        return retval;
 
+    }
+
+    public void defaultLoggedIn(SQLiteDatabase db){
+        ContentValues cv = new ContentValues();
+        cv.put(UID,0);
+        db.insert(LOGGEDIN_TABLE,null,cv);
+    }
+
+    public int getLoggedIn(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuerty = "SELECT * FROM " + LOGGEDIN_TABLE;
+        Cursor c = db.rawQuery(selectQuerty,null);
+        c.moveToFirst();
+        return c.getInt(c.getColumnIndex(UID));
+    }
+
+    public void updateLoggedIn(int uid){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(UID,uid);
+        db.update(LOGGEDIN_TABLE,cv,UID + "=" + getLoggedIn(),null);
+        db.close();
     }
 
     //STEPS -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -383,17 +450,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public String getOnTime(int uID, String date) {
         SQLiteDatabase db = getReadableDatabase();
 
-        String rv = "Not found";
+        String rv = "0";
         String selectQuery = "SELECT * FROM " + ONTIME_TABLE + " WHERE " + UID + " = '" + uID + "' AND " + ONTIME_DATE + " = '" + date + "'";
 
         Log.e("getOntime", selectQuery);
-        Cursor c = db.rawQuery(selectQuery, null);
-
-        if (c != null) {
-            c.moveToFirst();
-            rv = String.valueOf(c.getInt(c.getColumnIndex(ONTIME_TIME)));
+        Cursor c = null;
+        try {
+            c = db.rawQuery(selectQuery, null);
+            if (c != null) {
+                c.moveToFirst();
+                rv = String.valueOf(c.getInt(c.getColumnIndex(ONTIME_TIME)));
+                c.close();
+            }
+        } catch (Exception ex) {
             c.close();
+            System.out.println(ex.getMessage());
         }
+
         db.close();
         return rv;
     }
@@ -734,9 +807,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int time2 = new Random().nextInt(time);
                 time -= time2;
                 int time3 = new Random().nextInt(time);
-                newVisit(5, time1, date);
-                newVisit(6, time2, date);
-                newVisit(7, time3, date);
+                newVisit(1, time1, date);
+                newVisit(2, time2, date);
+                newVisit(3, time3, date);
             }
         }
 

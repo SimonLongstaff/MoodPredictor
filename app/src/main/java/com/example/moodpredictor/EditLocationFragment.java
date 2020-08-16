@@ -1,5 +1,7 @@
 package com.example.moodpredictor;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -36,12 +38,22 @@ public class EditLocationFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Object select = listView.getItemAtPosition(i);
-                int lID = mainActivity.database.getLocID(mainActivity.getLoggedInUser(),select.toString());
-                mainActivity.database.deleteLoc(lID);
-                mainActivity.updateAreas();
-                ArrayList<String> locations = mainActivity.getUserLocations();
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_multiple_choice, locations);
-                listView.setAdapter(arrayAdapter);
+                final int lID = mainActivity.database.getLocID(mainActivity.getLoggedInUser(),select.toString());
+               new AlertDialog.Builder(mainActivity)
+                       .setTitle("Delete location")
+                       .setMessage("Are you sure you want to delete this location?")
+                       .setIcon(R.drawable.ic_baseline_add_24)
+                       .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                           @Override
+                           public void onClick(DialogInterface dialogInterface, int i) {
+                               mainActivity.database.deleteLoc(lID);
+                               mainActivity.updateAreas();
+                               ArrayList<String> locations = mainActivity.getUserLocations();
+                               ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_multiple_choice, locations);
+                               listView.setAdapter(arrayAdapter);
+                           }
+                       })
+                       .setNegativeButton(R.string.no,null).show();
 
             }
         });

@@ -14,9 +14,9 @@
     //Home Page
     <string name="Current_Mood">Current Mood Estimation:</string>
     <string name="Current_Mood_Prediction">Current Mood Prediction(PH)</string>
-    <string name="steps_today">Steps Today:</string>
+    <string name="steps_today">Steps</string>
     <string name="steps">step count(PH)</string>
-    <string name="screen_on_time">Today\'s Screen on Time:</string>
+    <string name="screen_on_time">Screen on Time:</string>
     <string name="screenTime">Screen Time (PH)</string>
 
     //Map
@@ -26,8 +26,10 @@
     <string name="name">Name:</string>
     <string name="how_are_you_today">How are you today?</string>
     <string name="x">X</string>
-    <string name="shakes_today">Today\'s Jitteriness: </string>
+    <string name="shakes_today">Jitteriness </string>
     <string name="refresh">Refresh</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
 
 </resources>

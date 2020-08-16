@@ -4,8 +4,17 @@ import java.util.Arrays;
 
 public class BayesHelper {
 
-    //MultiBayes
-
+    /**
+     * The main prediction method takes matrices of all the collected data and runs it through a bayesian algorithm
+     * @param stepsMatrix - matrix of steps and moods values
+     * @param shakeMatrix - matrix of shake and mood values
+     * @param onTimeMatrix - matrix of screen on time and mood values
+     * @param shakes - current shake value for the day
+     * @param steps - current step value for the day
+     * @param onTime - current screen on time for the day
+     * @param locMoodCalObject - a collection of data for the user defined locations and moods generated in the MainActivity class
+     * @return the prediction of the mood as an integer between 1 and 5
+     */
     public static int predictMoodShakeOnTime(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shakes, int steps, int onTime, LocMoodCalObject locMoodCalObject ){
         double tVS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,0,locMoodCalObject.getLocMoodVs());
         double tS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,1,locMoodCalObject.getLocMoodS());
@@ -65,7 +74,18 @@ public class BayesHelper {
 
     }
 
-
+    /**
+     * Support prediction method, takes the matrices and values and calculated the total value of a mood for all variables
+     * that will be used to divide today's value in the main algorithm
+     * @param stepsMatrix - matrix of steps and moods values
+     * @param shakeMatrix - matrix of shake and mood values
+     * @param onTimeMatrix - matrix of screen on time and mood values
+     * @param shake - current shake value for the day
+     * @param steps - current step value for the day
+     * @param onTime - current screen on time for the day
+     * @param locMood - the total from locmoodcal object for the mood being operated on
+     * @return - returns the calculated value as a double
+     */
     public static double matrixTheta(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shake, int steps, int onTime, int mood, double locMood){
 
         double totalMoodShake = totalMatrixRow(shakeMatrix,6,mood);
@@ -78,10 +98,13 @@ public class BayesHelper {
         return ((shakeMatrix[mood][shakeBucket(shake)]/totalMoodShake) * (stepsMatrix[mood][stepBucket(steps)]/totalMoodSteps) * (onTimeMatrix[mood][onTimeBucket(onTime)]/totalOnTime) * (locMood)) * (totalMoodCombined/totalCombined);
     }
 
-
-
-
-
+    /**
+     * Does a portion of the bayes calculation for location and mood values.
+     * @param locMatrix - matrix and location visit times and moods
+     * @param mood - current mood
+     * @param locTime - current location time
+     * @return - percentage of total entries of a mood that that location visit time has
+     */
     public static double locMoodCal(int[][] locMatrix, int mood, int locTime){
         double totalMood = totalMatrixRow(locMatrix,10,mood);
         int locBucket = dayBucket(locTime);
@@ -89,7 +112,13 @@ public class BayesHelper {
         return value/totalMood;
     }
 
-    //Returns the total sum of values in a step matrix
+    /**
+     * Returns the total sum of a matrix
+     * @param matrix - matrix to be calculated
+     * @param columns - number of columns
+     * @param row - numbers of rows
+     * @return - returns the total of the matrix
+     */
     public static int totalMatrix(int[][] matrix, int columns, int row) {
         int total = 0;
 
@@ -102,7 +131,13 @@ public class BayesHelper {
         return total;
     }
 
-    //Returns to the total value of a row in a matrix
+    /**
+     * Returns the total of a row in a matrix
+     * @param matrix - matrix to be calculated
+     * @param columns - number of columns in matrix
+     * @param row - the row to be counted
+     * @return - total of that row in the matrix
+     */
     public static int totalMatrixRow(int[][] matrix, int columns, int row) {
 
         int total = 0;
@@ -114,7 +149,13 @@ public class BayesHelper {
         return total;
     }
 
-    //Return to the total value
+    /**
+     * Returns the total of a column in a matrix
+     * @param matrix - target matrix
+     * @param column - target column
+     * @param row - number of rows
+     * @return - return the total value of the entire column
+     */
     public static int totalMatrixColumn(int[][] matrix, int column, int row) {
 
         int total = 0;
@@ -126,7 +167,11 @@ public class BayesHelper {
         return total;
     }
 
-//Puts steps into bucket values for processing
+    /**
+     * Buckets the step values to allow for matrix formation
+     * @param steps - steps to be bucketed
+     * @return - bucketed value
+     */
     public static int stepBucket(int steps) {
 
         int stepbucket = 0;
@@ -163,7 +208,11 @@ public class BayesHelper {
         return stepbucket;
     }
 
-    //Puts the Shakes into a bucket
+    /**
+     * Puts the shake value into a bucket for matrix formation
+     * @param shakes - current shake value
+     * @return - bucketed value
+     */
     public static int shakeBucket(int shakes){
 
         int shakebucket = 0;
@@ -187,6 +236,12 @@ public class BayesHelper {
         return shakebucket;
     }
 
+    /**
+     * Buckets screen on time value for matrix formation
+     * Buckets them into hour brackets
+     * @param onTime - current screen on time
+     * @return - hour bucketed value
+     */
     public static int onTimeBucket(int onTime){
 
         int onTimebucket = 0;
@@ -225,6 +280,12 @@ public class BayesHelper {
         return onTimebucket;
     }
 
+    /**
+     * Buckets the visit time for locations
+     * Buckets them based on percentage of a day with 10% brackets
+     * @param visit - visit time to bucket
+     * @return - bucketed visit time
+     */
     public static int dayBucket(int visit){
 
         int dayBucket = 0;

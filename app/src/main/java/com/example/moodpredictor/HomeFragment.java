@@ -7,6 +7,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,15 +15,18 @@ import android.widget.Chronometer;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import static androidx.core.content.ContextCompat.getSystemService;
 
 public class HomeFragment extends Fragment {
-
-    Chronometer chronometer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,9 +42,22 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.home_layout, container, false);
-
+        final View view = inflater.inflate(R.layout.home_layout, container, false);
         final MainActivity activity = (MainActivity) getActivity();
+
+        if (!activity.database.shakeExists(activity.getLoggedInUser(), activity.getDate())) {
+            activity.database.newShake(activity.getLoggedInUser(), activity.getDate(), 0);
+        }
+
+        if (!activity.database.onTimeExists(activity.getLoggedInUser(), activity.getDate())) {
+            activity.database.newOntime(activity.getLoggedInUser(), activity.getDate(), 0);
+        }
+
+        if (activity.database.stepIDExists(activity.getDate(), activity.getLoggedInUser())) {
+            activity.database.insertNewStepDay(0, activity.getLoggedInUser(), activity.getDate());
+        }
+
+
         final TextView stepnum = view.findViewById(R.id.numSteps);
         stepnum.setText(activity.getSteps());
 
@@ -48,33 +65,51 @@ public class HomeFragment extends Fragment {
         shakenum.setText(JitterString());
 
         final TextView mood = view.findViewById(R.id.TextMoodPredict);
+        int result = activity.prediction();
+        switch (result) {
+            case (0):
+                mood.setText("Not enough Data");
+                break;
+            case (1):
+                mood.setText("Very Poor");
+                mood.setTextColor(getResources().getColor(R.color.red));
+                break;
+            case (2):
+                mood.setText("Poor");
+                mood.setTextColor(getResources().getColor(R.color.orange));
+                break;
+            case (3):
+                mood.setText("Neutral");
+                mood.setTextColor(getResources().getColor(R.color.grey));
+                break;
+            case (4):
+                mood.setText("Good");
+                mood.setTextColor(getResources().getColor(R.color.lime));
+                break;
+            case (5):
+                mood.setText("Very Good");
+                mood.setTextColor(getResources().getColor(R.color.green));
+                break;
+
+        }
 
         final Chronometer chronometer = view.findViewById(R.id.timer);
-        System.out.println("Time: " + activity.database.getOnTime(activity.getLoggedInUser(),activity.getDate()));
-        chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(),activity.getDate()))*1000)));
+        System.out.println("Time: " + activity.database.getOnTime(activity.getLoggedInUser(), activity.getDate()));
+        chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(), activity.getDate())) * 1000)));
         chronometer.start();
 
-        Button refresh = (Button) view.findViewById(R.id.refresh);
+
+        FloatingActionButton refresh = (FloatingActionButton) view.findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 activity.updateAreas();
                 stepnum.setText(activity.getSteps());
                 shakenum.setText(JitterString());
-                chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(),activity.getDate()))*1000)));
+                chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(), activity.getDate())) * 1000)));
                 chronometer.start();
-
-
-            }
-        });
-
-
-        Button predict = view.findViewById(R.id.buttonPredictMood);
-        predict.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
                 int result = activity.prediction();
-                switch (result){
+                switch (result) {
                     case (1):
                         mood.setText("Very Poor");
                         mood.setTextColor(getResources().getColor(R.color.red));
@@ -97,8 +132,11 @@ public class HomeFragment extends Fragment {
                         break;
 
                 }
+
+
             }
         });
+
 
         Button openMoodPopup = view.findViewById(R.id.set_mood);
         openMoodPopup.setOnClickListener(new View.OnClickListener() {
@@ -134,10 +172,11 @@ public class HomeFragment extends Fragment {
         veryBad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(activity.getLoggedInUser(),date)) {
-                    activity.database.updateMood(activity.getLoggedInUser(),date, 1);
+                if (activity.database.moodIDExists(activity.getLoggedInUser(), date)) {
+                    activity.database.updateMood(activity.getLoggedInUser(), date, 1);
                 } else
                     activity.database.newMood(activity.getLoggedInUser(), 1, date);
+                Toast.makeText(getContext(),"Mood Update",Toast.LENGTH_SHORT).show();
                 popupWindow.dismiss();
 
             }
@@ -148,10 +187,11 @@ public class HomeFragment extends Fragment {
         bad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(activity.getLoggedInUser(),date)) {
-                    activity.database.updateMood(activity.getLoggedInUser(),date, 2);
+                if (activity.database.moodIDExists(activity.getLoggedInUser(), date)) {
+                    activity.database.updateMood(activity.getLoggedInUser(), date, 2);
                 } else
                     activity.database.newMood(activity.getLoggedInUser(), 2, date);
+                Toast.makeText(getContext(),"Mood Update",Toast.LENGTH_SHORT).show();
                 popupWindow.dismiss();
 
             }
@@ -162,10 +202,11 @@ public class HomeFragment extends Fragment {
         neutral.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(activity.getLoggedInUser(),date)) {
-                    activity.database.updateMood(activity.getLoggedInUser(),date, 3);
+                if (activity.database.moodIDExists(activity.getLoggedInUser(), date)) {
+                    activity.database.updateMood(activity.getLoggedInUser(), date, 3);
                 } else
                     activity.database.newMood(activity.getLoggedInUser(), 3, date);
+                Toast.makeText(getContext(),"Mood Update",Toast.LENGTH_SHORT).show();
                 popupWindow.dismiss();
 
             }
@@ -176,10 +217,11 @@ public class HomeFragment extends Fragment {
         good.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(activity.getLoggedInUser(),date)) {
-                    activity.database.updateMood(activity.getLoggedInUser(),date, 4);
+                if (activity.database.moodIDExists(activity.getLoggedInUser(), date)) {
+                    activity.database.updateMood(activity.getLoggedInUser(), date, 4);
                 } else
                     activity.database.newMood(activity.getLoggedInUser(), 4, date);
+                Toast.makeText(getContext(),"Mood Update",Toast.LENGTH_SHORT).show();
                 popupWindow.dismiss();
 
             }
@@ -190,10 +232,11 @@ public class HomeFragment extends Fragment {
         veryGood.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (activity.database.moodIDExists(activity.getLoggedInUser(),date)) {
-                    activity.database.updateMood(activity.getLoggedInUser(),date, 5);
+                if (activity.database.moodIDExists(activity.getLoggedInUser(), date)) {
+                    activity.database.updateMood(activity.getLoggedInUser(), date, 5);
                 } else
                     activity.database.newMood(activity.getLoggedInUser(), 5, date);
+                Toast.makeText(getContext(),"Mood Update",Toast.LENGTH_SHORT).show();
                 popupWindow.dismiss();
 
 
@@ -220,33 +263,34 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        final MainActivity activity = (MainActivity) getActivity();
         Chronometer chronometer = getView().findViewById(R.id.timer);
         chronometer.start();
     }
 
 
-    public String  JitterString(){
+    public String JitterString() {
         MainActivity mainActivity = (MainActivity) getActivity();
         int shakebucket = mainActivity.getShakeBucketed();
         String retval;
 
-        switch (shakebucket){
+        switch (shakebucket) {
             case (0):
                 retval = "Very Low";
-             break;
-            case(1):
+                break;
+            case (1):
                 retval = "Low";
                 break;
-            case(2):
+            case (2):
                 retval = "Moderate";
                 break;
-            case(3):
+            case (3):
                 retval = "High";
                 break;
-            case(4):
+            case (4):
                 retval = "Very High";
                 break;
-            case(5):
+            case (5):
                 retval = "Extremly High";
                 break;
             default:
@@ -254,5 +298,6 @@ public class HomeFragment extends Fragment {
         }
         return retval;
     }
+
 
 }

@@ -23,7 +23,15 @@ public class SettingFragment extends Fragment {
 
         TextView sUser = view.findViewById(R.id.Setting_User);
         final MainActivity activity = (MainActivity) getActivity();
-        sUser.setText(activity.getLoggedInName());
+        sUser.setText(activity.database.getLoggedIn(activity.database.getLoggedIn()));
+
+        Button debugDB = view.findViewById(R.id.DEBUG_Gen_Db);
+        debugDB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                activity.database.dummyData(activity.database.getLoggedIn());
+            }
+        });
 
         Button debugSteps = view.findViewById(R.id.DEBUG_addsteps);
         debugSteps.setOnClickListener(new View.OnClickListener() {

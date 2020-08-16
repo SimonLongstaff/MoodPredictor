@@ -32,8 +32,17 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="250dp"
+        android:layout_marginEnd="-100dp"
         android:text="Mood History"
         android:id="@+id/ButtonMoodHistory"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="250dp"
+        android:layout_marginEnd="100dp"
+        android:text="Location History"
+        android:id="@+id/ButtonLocHistory"/>
 
 </FrameLayout>

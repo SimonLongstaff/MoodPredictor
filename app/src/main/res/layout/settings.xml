@@ -71,6 +71,15 @@
         android:text="Remove 1 Hour"
         android:id="@+id/DEBUG_removeHour"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="150dp"
+        android:text="Generate Database"
+        android:id="@+id/DEBUG_Gen_Db"/>
+
+
 
 
 
