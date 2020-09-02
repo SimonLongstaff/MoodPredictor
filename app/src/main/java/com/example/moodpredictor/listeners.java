@@ -17,7 +17,9 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -30,7 +32,7 @@ public class listeners extends Service implements SensorEventListener {
     DatabaseHelper databaseHelper;
     ArrayList<Location> userLocations;
     LocationListener locationListener;
-    private static final int Geo_Radius = 50;
+    private static final int Geo_Radius = 80;
     double startTimer;
     double endTimer;
     Location currentLocation = null;
@@ -39,8 +41,8 @@ public class listeners extends Service implements SensorEventListener {
 
     @Override
     public ComponentName startService(Intent service) {
-        date = service.getStringExtra("Date");
-        uId = service.getStringExtra("uID");
+        date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        uId = "1";
         return super.startService(service);
     }
 
@@ -94,8 +96,10 @@ public class listeners extends Service implements SensorEventListener {
                 System.out.println("Lat: " + latitude + " Long: " + longitude);
                 if (currentLocation != null) {
                     if (location.distanceTo(currentLocation) > Geo_Radius) {
+                        date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
                         endTimer = System.currentTimeMillis();
                         int time = (int) ((endTimer - startTimer) / 1000);
+                        System.out.println("Leaving location, time spent in zone: " + time);
                         int lID = databaseHelper.getLocID(1, currentLocation.getProvider());
                         if (databaseHelper.visitExists(lID, date)) {
 
@@ -108,6 +112,7 @@ public class listeners extends Service implements SensorEventListener {
                     for (int i = 0; i < userLocations.size(); i++) {
                         if (location.distanceTo(userLocations.get(i)) < Geo_Radius) {
                             currentLocation = userLocations.get(i);
+                            System.out.println("Entered Location, Started Timer.");
                             startTimer = System.currentTimeMillis();
                         }
                     }
@@ -130,7 +135,7 @@ public class listeners extends Service implements SensorEventListener {
             }
         };
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 25, locationListener);
         super.onCreate();
     }
 

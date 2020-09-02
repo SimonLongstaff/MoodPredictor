@@ -27,7 +27,7 @@ public class stepsListener extends Service implements StepListener, SensorEventL
         return null;
     }
 
-    public static final String CHANNEL_ID = "exampleServiceChannel";
+    public static final String CHANNEL_ID = "ServiceChannel";
 
     @Override
     public void onCreate() {
@@ -45,12 +45,12 @@ public class stepsListener extends Service implements StepListener, SensorEventL
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        String input = "Steps";
+        String input = "Using Sensors";
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Example Service")
+                .setContentTitle("Data Gathering Service")
                 .setContentText(input)
                 .setSmallIcon(R.drawable.ic_baseline_add_location_24)
                 .setContentIntent(pendingIntent)

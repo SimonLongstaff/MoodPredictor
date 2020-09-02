@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout drawer;
     String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
     DatabaseHelper database = new DatabaseHelper(this);
-    public static final String CHANNEL_ID = "exampleServiceChannel";
+    public static final String CHANNEL_ID = "ServiceChannel";
     ArrayList<Location> userLocations;
     private int loggedInUID = 1;
 
@@ -159,6 +159,8 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_listloc:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new EditLocationFragment()).commit();
                 break;
+            case R.id.nav_loc:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new LocationRatingFragment()).commit();
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;

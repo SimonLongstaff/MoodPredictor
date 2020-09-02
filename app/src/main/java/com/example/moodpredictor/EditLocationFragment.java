@@ -42,7 +42,7 @@ public class EditLocationFragment extends Fragment {
                new AlertDialog.Builder(mainActivity)
                        .setTitle("Delete location")
                        .setMessage("Are you sure you want to delete this location?")
-                       .setIcon(R.drawable.ic_baseline_add_24)
+                       .setIcon(R.drawable.ic_baseline_delete_24)
                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialogInterface, int i) {

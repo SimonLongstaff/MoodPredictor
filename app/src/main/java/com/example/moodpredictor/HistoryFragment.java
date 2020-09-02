@@ -124,51 +124,6 @@ public class HistoryFragment extends Fragment {
         });
 
 
-        Button locHistory = view.findViewById(R.id.ButtonLocHistory);
-        locHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final ArrayList<String> userLocations = activity.getUserLocations();
-                DataPoint[] retval = new DataPoint[userLocations.size()];
-                for (int i =0; i<userLocations.size();i++){
-                    int mood = 0;
-                    int moodcount = 0;
-                    int lID = activity.database.getLocID(1,userLocations.get(i));
-                    ArrayList<LocationMoodObject> locmood = activity.database.getLocMood(lID);
-                    for (int j = 0; j<locmood.size();j++){
-                        moodcount = moodcount + locmood.get(j).mood;
-                    }
-                    mood = moodcount/locmood.size();
-                    DataPoint rv = new DataPoint(i,mood);
-                    retval[i] = rv;
-                }
-                BarGraphSeries<DataPoint> graphSeries = new BarGraphSeries<>(retval);
-                graphSeries.setSpacing(50);
-                graphSeries.setDrawValuesOnTop(true);
-                graphSeries.setValuesOnTopColor(Color.RED);
-                graphView.clearFocus();
-                graphView.removeAllSeries();
-                graphView.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
-                    @Override
-                    public String formatLabel(double value, boolean isValueX) {
-                        return String.valueOf(value);
-                    }
-                });
-                graphView.getViewport().setYAxisBoundsManual(true);
-                graphView.getViewport().setScalable(false);
-                graphView.getViewport().setMaxY(5);
-                graphView.setTitle("Location History");
-                graphView.addSeries(graphSeries);
-                graphSeries.setValueDependentColor(new ValueDependentColor<DataPoint>() {
-                    @Override
-                    public int get(DataPoint data) {
-                        return Color.rgb((int) data.getX()*255/4, (int) Math.abs(data.getY()*255/6), 100);
-                    }
-                });
-            }
-        });
-
-
         return view;
     }
 

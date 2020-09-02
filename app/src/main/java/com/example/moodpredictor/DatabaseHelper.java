@@ -808,8 +808,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 time -= time2;
                 int time3 = new Random().nextInt(time);
                 newVisit(1, time1, date);
-                newVisit(2, time2, date);
+                if (i%2 == 0){
+                    newVisit(2, time2, date);
+                }
                 newVisit(3, time3, date);
+
             }
         }
 

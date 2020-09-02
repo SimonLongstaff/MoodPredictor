@@ -6,13 +6,13 @@ public class StepDetector {
     private static final int VEL_RING_SIZE = 10;
 
     // Step threshold sensitivity
-    private static final float STEP_THRESHOLD = 100f;
-    private static final float SHAKE_THRESHOLD = 50f;
+    private static final float STEP_THRESHOLD = 50f;
+    private static final float SHAKE_THRESHOLD = 10f;
 
-    //Step Delay sensitivity (nanoseconds)
-    //Currently set to : 0.25 seconds
-    private static final int STEP_DELAY_NS = 250000000;
-    private static final int SHAKE_DELAY_NS = 300000000;
+    //Delay sensitivity (nanoseconds)
+    //Currently set to : 0.5 & 0.9 seconds
+    private static final int STEP_DELAY_NS = 500000000;
+    private static final int SHAKE_DELAY_NS = 900000000;
 
     private int accelRingCounter = 0;
     private float[] accelRingX = new float[ACCEL_RING_SIZE];
@@ -66,7 +66,7 @@ public class StepDetector {
             lastStepTimeNs = timeNs;
         }
 
-        else if (velocityEstimate > SHAKE_THRESHOLD && oldVelocityEstimate <= SHAKE_THRESHOLD
+        else if (velocityEstimate > SHAKE_THRESHOLD && velocityEstimate < STEP_THRESHOLD && oldVelocityEstimate <= SHAKE_THRESHOLD
                 && (timeNs - lastShakeTimeNs > SHAKE_DELAY_NS)) {
             listener.shake(timeNs);
             lastShakeTimeNs = timeNs;

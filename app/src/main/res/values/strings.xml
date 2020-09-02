@@ -30,6 +30,7 @@
     <string name="refresh">Refresh</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="location_history">Location History</string>
 
 
 </resources>
