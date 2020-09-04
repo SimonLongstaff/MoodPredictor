@@ -1,5 +1,6 @@
 package com.example.moodpredictor;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,12 +28,21 @@ public class WelcomeFragment extends Fragment {
         enter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 User user = new User(name.getText().toString());
-                activity.database.insertUser(user);
-                int newID = activity.database.getuID(user.getName());
-                activity.setLoggedInUser(newID);
-                activity.database.updateLoggedIn(newID);
-                activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
+
+                if (user.getName().equals("")) {
+                    new AlertDialog.Builder(activity)
+                            .setTitle("Please Enter a name")
+                            .setIcon(R.drawable.ic_baseline_sentiment_very_dissatisfied_24)
+                            .setNegativeButton("Ok", null).show();
+                } else {
+                    activity.database.insertUser(user);
+                    int newID = activity.database.getuID(user.getName());
+                    activity.setLoggedInUser(newID);
+                    activity.database.updateLoggedIn(newID);
+                    activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
+                }
             }
         });
 

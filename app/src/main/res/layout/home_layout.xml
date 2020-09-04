@@ -13,6 +13,14 @@
         android:layout_marginTop="200dp"
         android:text="@string/how_are_you_today" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text=""
+        android:id="@+id/suggestText"
+        android:layout_marginTop="100dp"/>
+
 
     <FrameLayout
         android:layout_width="match_parent"

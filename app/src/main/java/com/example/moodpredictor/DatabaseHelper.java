@@ -253,7 +253,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-
     public boolean stepIDExists(String date, int uID) {
         Cursor c = null;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -562,7 +561,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.e(TAG, "Visit Updated");
         db.close();
     }
-
 
     public boolean visitExists(int lid, String date) {
         SQLiteDatabase db = this.getReadableDatabase();

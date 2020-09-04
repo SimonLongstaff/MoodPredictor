@@ -16,11 +16,11 @@ public class BayesHelper {
      * @return the prediction of the mood as an integer between 1 and 5
      */
     public static int predictMoodShakeOnTime(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shakes, int steps, int onTime, LocMoodCalObject locMoodCalObject ){
-        double tVS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,0,locMoodCalObject.getLocMoodVs());
-        double tS = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,1,locMoodCalObject.getLocMoodS());
-        double tN = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,2,locMoodCalObject.getLocMoodN());
-        double tH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,3,locMoodCalObject.getLocMoodH());
-        double tVH = matrixTheta(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,4,locMoodCalObject.getLocMoodVh());
+        double tVS = matrixOmega(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,0,locMoodCalObject.getLocMoodVs());
+        double tS = matrixOmega(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,1,locMoodCalObject.getLocMoodS());
+        double tN = matrixOmega(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,2,locMoodCalObject.getLocMoodN());
+        double tH = matrixOmega(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,3,locMoodCalObject.getLocMoodH());
+        double tVH = matrixOmega(stepsMatrix,shakeMatrix,onTimeMatrix,shakes,steps,onTime,4,locMoodCalObject.getLocMoodVh());
 
         double totalVSCombined = totalMatrixRow(stepsMatrix,10,0) + totalMatrixRow(shakeMatrix, 6,0) + totalMatrixRow(onTimeMatrix,16,0) + locMoodCalObject.getRowVs();
         double totalSCombined = totalMatrixRow(stepsMatrix,10,1) + totalMatrixRow(shakeMatrix, 6,1) + totalMatrixRow(onTimeMatrix,16,1) + locMoodCalObject.getRowS();
@@ -46,14 +46,14 @@ public class BayesHelper {
         double totalHonTime = totalMatrixRow(onTimeMatrix,16,3);
         double totalVhonTime = totalMatrixRow(onTimeMatrix,16,4);
 
-        double theta = tVS + tS + tN + tH + tVH;
+        double omega = tVS + tS + tN + tH + tVH;
         double totalCombined = totalMatrix(stepsMatrix,10,5) + totalMatrix(shakeMatrix, 6, 5) + totalMatrix(onTimeMatrix,16,5) + locMoodCalObject.getTotal();
 
-        double predictVS = (((shakeMatrix[0][shakeBucket(shakes)]/totalVsShake) * (stepsMatrix[0][stepBucket(steps)]/totalVsSteps) * (onTimeMatrix[0][onTimeBucket(onTime)]/totalVsonTime) * locMoodCalObject.getLocMoodVs())/theta)*(totalVSCombined/totalCombined);
-        double predictS = (((shakeMatrix[1][shakeBucket(shakes)]/totalSShake) * (stepsMatrix[1][stepBucket(steps)]/totalSSteps) * (onTimeMatrix[1][onTimeBucket(onTime)]/totalSonTime) * locMoodCalObject.getLocMoodS())/theta)*(totalSCombined/totalCombined);
-        double predictN = (((shakeMatrix[2][shakeBucket(shakes)]/totalNShake) * (stepsMatrix[2][stepBucket(steps)]/totalNSteps) * (onTimeMatrix[2][onTimeBucket(onTime)]/totalNonTime) * locMoodCalObject.getLocMoodN())/theta)*(totalNCombined/totalCombined);
-        double predictH = (((shakeMatrix[3][shakeBucket(shakes)]/totalHShake) * (stepsMatrix[3][stepBucket(steps)]/totalHSteps) * (onTimeMatrix[3][onTimeBucket(onTime)]/totalHonTime) * locMoodCalObject.getLocMoodH())/theta)*(totalHCombined/totalCombined);
-        double predictVH = (((shakeMatrix[4][shakeBucket(shakes)]/totalVhShake) * (stepsMatrix[4][stepBucket(steps)]/totalVhSteps) * (onTimeMatrix[4][onTimeBucket(onTime)]/totalVhonTime) * locMoodCalObject.getLocMoodVh())/theta)*(totalVHCombined/totalCombined);
+        double predictVS = (((shakeMatrix[0][shakeBucket(shakes)]/totalVsShake) * (stepsMatrix[0][stepBucket(steps)]/totalVsSteps) * (onTimeMatrix[0][onTimeBucket(onTime)]/totalVsonTime) * locMoodCalObject.getLocMoodVs())/ omega)*(totalVSCombined/totalCombined);
+        double predictS = (((shakeMatrix[1][shakeBucket(shakes)]/totalSShake) * (stepsMatrix[1][stepBucket(steps)]/totalSSteps) * (onTimeMatrix[1][onTimeBucket(onTime)]/totalSonTime) * locMoodCalObject.getLocMoodS())/ omega)*(totalSCombined/totalCombined);
+        double predictN = (((shakeMatrix[2][shakeBucket(shakes)]/totalNShake) * (stepsMatrix[2][stepBucket(steps)]/totalNSteps) * (onTimeMatrix[2][onTimeBucket(onTime)]/totalNonTime) * locMoodCalObject.getLocMoodN())/ omega)*(totalNCombined/totalCombined);
+        double predictH = (((shakeMatrix[3][shakeBucket(shakes)]/totalHShake) * (stepsMatrix[3][stepBucket(steps)]/totalHSteps) * (onTimeMatrix[3][onTimeBucket(onTime)]/totalHonTime) * locMoodCalObject.getLocMoodH())/ omega)*(totalHCombined/totalCombined);
+        double predictVH = (((shakeMatrix[4][shakeBucket(shakes)]/totalVhShake) * (stepsMatrix[4][stepBucket(steps)]/totalVhSteps) * (onTimeMatrix[4][onTimeBucket(onTime)]/totalVhonTime) * locMoodCalObject.getLocMoodVh())/ omega)*(totalVHCombined/totalCombined);
 
         double[] predict = new double[]{predictVS, predictS, predictN, predictH, predictVH};
         System.out.println("Final predict " + Arrays.toString(predict));
@@ -86,7 +86,7 @@ public class BayesHelper {
      * @param locMood - the total from locmoodcal object for the mood being operated on
      * @return - returns the calculated value as a double
      */
-    public static double matrixTheta(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shake, int steps, int onTime, int mood, double locMood){
+    public static double matrixOmega(int[][] stepsMatrix, int[][] shakeMatrix, int[][] onTimeMatrix, int shake, int steps, int onTime, int mood, double locMood){
 
         double totalMoodShake = totalMatrixRow(shakeMatrix,6,mood);
         double totalMoodSteps = totalMatrixRow(stepsMatrix,10,mood);
@@ -272,9 +272,9 @@ public class BayesHelper {
             onTimebucket =12;
         if (onTime>=46800 && onTime<50400)
             onTimebucket =13;
-        if (onTime>=50400 && onTime<54000)
+        if (onTime>=50400 && onTime<57600)
             onTimebucket =14;
-        if (onTime>=54000 && onTime<57600)
+        if (onTime>=57600)
             onTimebucket =15;
 
         return onTimebucket;

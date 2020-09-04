@@ -2,6 +2,7 @@ package com.example.moodpredictor;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -76,8 +77,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MainActivity activity = (MainActivity) getActivity();
                 title = enterTitle.getText().toString();
-                createSavedLocation();
+                if (title.equals("")) {
+                    new AlertDialog.Builder(activity)
+                            .setTitle("Please Enter a name")
+                            .setIcon(R.drawable.ic_baseline_sentiment_very_dissatisfied_24)
+                            .setNegativeButton("Ok", null).show();
+                }
+                else {
+                    createSavedLocation();
+                }
             }
         });
 

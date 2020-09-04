@@ -1,13 +1,9 @@
 package com.example.moodpredictor;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -17,16 +13,18 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
 import androidx.fragment.app.Fragment;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
 public class HomeFragment extends Fragment {
+
+    String recommended = "";
+    String lastcheck = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,6 +56,9 @@ public class HomeFragment extends Fragment {
         }
 
 
+        final TextView suggest = view.findViewById(R.id.suggestText);
+        String todaysDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
         final TextView stepnum = view.findViewById(R.id.numSteps);
         stepnum.setText(activity.getSteps());
 
@@ -73,10 +74,18 @@ public class HomeFragment extends Fragment {
             case (1):
                 mood.setText("Very Poor");
                 mood.setTextColor(getResources().getColor(R.color.red));
+                if (!lastcheck.equals(todaysDate)){
+                    recommended();
+                }
+                suggest.setText("Try visiting " + recommended + " to improve your mood");
                 break;
             case (2):
                 mood.setText("Poor");
                 mood.setTextColor(getResources().getColor(R.color.orange));
+                if (!lastcheck.equals(todaysDate)){
+                    recommended();
+                }
+                suggest.setText("Try visiting " + recommended + " to improve your mood");
                 break;
             case (3):
                 mood.setText("Neutral");
@@ -297,6 +306,49 @@ public class HomeFragment extends Fragment {
                 throw new IllegalStateException("Unexpected value: " + shakebucket);
         }
         return retval;
+    }
+
+    public void recommended() {
+        MainActivity activity = (MainActivity) getActivity();
+        ArrayList<Integer> results = new ArrayList<>();
+        int highest = 0;
+        for (int i = 0; i < activity.getUserLocations().size(); i++) {
+            int lid = activity.database.getLocID(1, activity.userLocations.get(i).getProvider());
+            ArrayList<LocationMoodObject> locmood = activity.database.getLocMood(lid);
+            int result = 0;
+
+            for (int j = 0; j < locmood.size(); j++) {
+                switch (locmood.get(j).mood) {
+                    case (1):
+                        result = result + 1;
+                        break;
+                    case (2):
+                        result = result + 2;
+                        break;
+                    case (3):
+                        result = result + 3;
+                        break;
+                    case (4):
+                        result = result + 4;
+                        break;
+                    case (5):
+                        result = result + 5;
+                        break;
+                }
+            }
+            if (locmood.size()>0){
+            result = result / locmood.size();
+            results.add(result);}
+
+        }
+
+        for (int i = 0; i < results.size(); i++) {
+            if (results.get(i) > highest) {
+                highest = results.get(i);
+            }
+        }
+
+        recommended = activity.userLocations.get(highest).getProvider();
     }
 
 
