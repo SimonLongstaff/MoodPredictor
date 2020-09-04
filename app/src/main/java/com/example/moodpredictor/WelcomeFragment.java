@@ -25,6 +25,9 @@ public class WelcomeFragment extends Fragment {
         final EditText name = view.findViewById(R.id.wel_name_enter);
         Button enter = view.findViewById(R.id.wel_button);
 
+        /**
+         * Enters the new users into the database and moves to dashboard
+         */
         enter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

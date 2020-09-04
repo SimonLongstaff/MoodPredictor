@@ -41,6 +41,9 @@ public class HistoryFragment extends Fragment {
 
         final GraphView graphView = view.findViewById(R.id.graph);
         Button stepHistory = view.findViewById(R.id.ButtonStepsHistory);
+        /**
+         * Create the graph for step history
+         */
         stepHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -69,6 +72,9 @@ public class HistoryFragment extends Fragment {
         });
 
         final Button shakeHistory = view.findViewById(R.id.ButtonShakeHistory);
+        /**
+         * Creates the graph for shake history
+         */
         shakeHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,6 +103,9 @@ public class HistoryFragment extends Fragment {
         });
 
         Button moodHistory = view.findViewById(R.id.ButtonMoodHistory);
+        /**
+         * creates the graph for mood history
+         */
         moodHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

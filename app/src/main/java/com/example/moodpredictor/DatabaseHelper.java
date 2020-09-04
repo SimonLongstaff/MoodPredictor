@@ -115,6 +115,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //Debug User
     User debug = new User(1, "Simon");
 
+    /**
+     * Executes the table creation sql code
+     * @param db
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_USER);
@@ -146,6 +150,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static DatabaseHelper instance;
 
+    /**
+     *
+     * Returns the current instance of database
+     * @param context - the application context
+     * @return - database instance
+     */
     public static DatabaseHelper getInstance(Context context){
         if ( instance == null ){
             instance = new DatabaseHelper(context);
@@ -156,6 +166,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //USERS -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Inserts a new users into the data base
+     * @param user - new users to be inserted
+     */
     public void insertUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -165,6 +179,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(USER_TABLE, null, cv);
     }
 
+    /***
+     * Returns the user id of a user
+     * @param name - name of user
+     * @return uid of user
+     */
     public int getuID(String name){
         Cursor c = null;
         int retval = 0;
@@ -185,6 +204,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return retval;
     }
 
+    /**
+     * Returns the currently logged in user
+     * @param UID
+     * @return
+     */
     public String getLoggedIn(int UID) {
         SQLiteDatabase db = this.getReadableDatabase();
         String retval = "Not Found";
@@ -207,12 +231,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Sets the deafult user on creation
+     * This only servers as a way of measuring if a user has entered their name yet and finished set up
+     * @param db
+     */
     public void defaultLoggedIn(SQLiteDatabase db){
         ContentValues cv = new ContentValues();
         cv.put(UID,0);
         db.insert(LOGGEDIN_TABLE,null,cv);
     }
 
+    /**
+     * Returns the currently logged in uid
+     * @return - uid
+     */
     public int getLoggedIn(){
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuerty = "SELECT * FROM " + LOGGEDIN_TABLE;
@@ -221,6 +254,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return c.getInt(c.getColumnIndex(UID));
     }
 
+    /**
+     * Updates the currently logged in user to this uid
+     * @param uid
+     */
     public void updateLoggedIn(int uid){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -231,6 +268,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //STEPS -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * insets a new step day into the database
+     * @param steps - number of steps
+     * @param uid - user id
+     * @param date - the date to create
+     */
     public void insertNewStepDay(int steps, int uid, String date) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -244,6 +287,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Updates the steps for a entry of a specific day
+     * @param date - day to be updated
+     * @param uID - user id
+     * @param steps - new step value
+     */
     public void updateSteps(String date, int uID, int steps) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -253,6 +302,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Checks if a step id for that day and user exists
+     * @param date date to check
+     * @param uID user id
+     * @return if exists
+     */
     public boolean stepIDExists(String date, int uID) {
         Cursor c = null;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -275,6 +330,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Returns the value of steps on a day
+     * @param date - date to check
+     * @param uID - user id to check
+     * @return - number of steps
+     * @throws NullPointerException
+     */
     public String getSteps(String date, int uID) throws NullPointerException {
         SQLiteDatabase db = this.getReadableDatabase();
         String rv;
@@ -303,6 +365,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //MOOD -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Inserts new mood into the database
+     * @param uID user id
+     * @param mood mood to insert
+     * @param date - day to insert
+     */
     public void newMood(int uID, int mood, String date) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -314,6 +382,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * updates a mood
+     * @param uid - user id
+     * @param date - date to update
+     * @param mood - new mood
+     */
     public void updateMood(int uid, String date, int mood) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -324,6 +398,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * checks if a mood entry exists
+     * @param uid - user id
+     * @param date - date to check
+     * @return if exists
+     */
     public boolean moodIDExists(int uid, String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         System.out.println("Checking Mood Id");
@@ -349,6 +429,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //Shake -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * enters a new shake entry
+     * @param uID - user id
+     * @param date - date
+     * @param shakes - number of shakes
+     */
     public void newShake(int uID, String date, int shakes) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -360,6 +446,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * Updates a shake entry
+     * @param uid user id
+     * @param date date to update
+     * @param shakes number of shakes
+     */
     public void updateShake(int uid, String date, int shakes) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -369,6 +461,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * Returns the number of shakes
+     * @param uID user id
+     * @param date date
+     * @return number of shakes
+     */
     public String getShake(int uID, String date) {
         SQLiteDatabase db = getReadableDatabase();
 
@@ -387,6 +485,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rv;
     }
 
+    /**
+     * Check if a shake entry exists for a date
+     * @param uID user id
+     * @param date date to check
+     * @return if exists
+     */
     public boolean shakeExists(int uID, String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         System.out.println("Checking Shake Id");
@@ -411,6 +515,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //On time-----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * new screen on time entry
+     * @param uID - user id
+     * @param date - date of entry
+     * @param seconds - seconds of on time
+     */
     public void newOntime(int uID, String date, int seconds) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -422,6 +532,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * updates screen on time entry
+      * @param uID - user id
+     * @param date - date
+     * @param seconds - screen time
+     */
     public void updateOnTime(int uID, String date, int seconds) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -431,6 +547,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * Checks if screen on time entry exists for date
+     * @param uID
+     * @param date
+     * @return if exists
+     */
     public boolean onTimeExists(int uID, String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         System.out.println("Checking Mood Id");
@@ -446,6 +568,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * returns on time for a specific date
+     * @param uID
+     * @param date
+     * @return
+     */
     public String getOnTime(int uID, String date) {
         SQLiteDatabase db = getReadableDatabase();
 
@@ -472,6 +600,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //location -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Creates  new location
+     * @param uID
+     * @param name
+     * @param longitude
+     * @param lattitude
+     */
     public void newLocation(int uID, String name, double longitude, double lattitude) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -483,6 +618,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(LOCATION_TABLE, null, cv);
     }
 
+    /**
+     * Returns all locaitons for a user ID
+     * @param uID
+     * @return
+     */
     public ArrayList<Location> getLocations(int uID) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<Location> retval = new ArrayList<>();
@@ -508,6 +648,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Returns the location Id given the name of the location and user id
+     * @param uID
+     * @param name
+     * @return
+     */
     public int getLocID(int uID, String name) {
         SQLiteDatabase db = getReadableDatabase();
         int retval = -1;
@@ -529,6 +675,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return retval;
     }
 
+    /**
+     * Deletes a location
+     * @param lID
+     */
     public void deleteLoc(int lID){
         SQLiteDatabase db = getWritableDatabase();
         db.delete(LOCATION_TABLE,LOCATION_ID + "=" + lID, null );
@@ -536,6 +686,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Visit
+
+    /**
+     * Records a new visit
+     * @param lID
+     * @param time seconds
+     * @param date
+     */
     public void newVisit(int lID, int time, String date) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -548,6 +705,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Updates an already existing visit
+     * @param lID
+     * @param time - new time
+     * @param date
+     */
     public void updateVisit(int lID, int time, String date) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues update = new ContentValues();
@@ -562,6 +725,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    /**
+     * Check if a visit exists in the database for a given date and location id
+     * @param lid
+     * @param date
+     * @return
+     */
     public boolean visitExists(int lid, String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + VISIT_TABLE + " WHERE " + LOCATION_ID + " = '" + lid + "' AND " + VISIT_DATE + " = '" + date + "'";
@@ -582,6 +751,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Returns the visit time for a location id and date
+     * @param lID
+     * @param date
+     * @return
+     */
     public int getVisitTime(int lID, String date) {
         SQLiteDatabase db = this.getReadableDatabase();
         int retval = 0;
@@ -607,6 +782,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //Predict -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Creates and array of step and mood objects for use in prediction
+     * @param uid
+     * @return
+     */
     public ArrayList<StepMoodObject> getStepsMood(int uid) {
 
         SQLiteDatabase db = getReadableDatabase();
@@ -640,6 +820,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return retval;
     }
 
+    /**
+     * Creates and array of step and mood objects for use in prediction
+     * @param uid
+     * @return
+     */
     public ArrayList<StepMoodObject> getStepsMoodDate(int uid) {
 
         SQLiteDatabase db = getReadableDatabase();
@@ -673,6 +858,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return retval;
     }
 
+    /**
+     * Creates and array of shake and mood objects for use in prediction
+     * @param uid
+     * @return
+     */
     public ArrayList<ShakeMoodObject> getShakeMood(int uid) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<ShakeMoodObject> retval = new ArrayList<>();
@@ -698,6 +888,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Creates and array of shake and mood objects for use in prediction
+     * @param uid
+     * @return
+     */
     public ArrayList<ShakeMoodObject> getShakeMoodDate(int uid) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<ShakeMoodObject> retval = new ArrayList<>();
@@ -723,6 +918,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Creates and array of screen time and mood objects for use in prediction
+     * @param uid
+     * @return
+     */
     public ArrayList<onTimeMoodObject> getonTimeMood(int uid) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<onTimeMoodObject> retval = new ArrayList<>();
@@ -746,6 +946,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return retval;
     }
 
+    /**
+     * Creates and array of location visit time and mood objects for use in prediction
+     * @param lID
+     * @return
+     */
     public ArrayList<LocationMoodObject> getLocMood(int lID){
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<LocationMoodObject> retval = new ArrayList<>();

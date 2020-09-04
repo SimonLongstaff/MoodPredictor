@@ -42,6 +42,9 @@ public class LocationRatingFragment extends Fragment {
         graphView.getViewport().setMinX(0);
         graphView.getViewport().setMaxX(5.5);
 
+        /**
+         * Cycles through the users locations
+         */
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -57,6 +60,9 @@ public class LocationRatingFragment extends Fragment {
             }
         });
 
+        /**
+         * Cycles through the user locations in reverse
+         */
         prev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,6 +83,11 @@ public class LocationRatingFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Function to update the graph for location mood history
+     * @param lID - location ID
+     * @return a graphview bargraph series for the Location ID it was given
+     */
     public BarGraphSeries updateGraph(int lID){
 
         MainActivity activity = (MainActivity) getActivity();
@@ -130,6 +141,10 @@ public class LocationRatingFragment extends Fragment {
         return series;
     }
 
+    /**
+     * Sets the highest value in an array to a global variable
+     * @param numbers - array to be analysed
+     */
     public void higestValue(int[] numbers){
         int maxValue = numbers[0];
         for(int i=1;i < numbers.length;i++){

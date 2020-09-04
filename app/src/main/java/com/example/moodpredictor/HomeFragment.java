@@ -43,6 +43,10 @@ public class HomeFragment extends Fragment {
         final View view = inflater.inflate(R.layout.home_layout, container, false);
         final MainActivity activity = (MainActivity) getActivity();
 
+        /**
+         * Three checks for if an entry in the database exists for each recording on the current day, if it doesn't
+         * it creates them
+         */
         if (!activity.database.shakeExists(activity.getLoggedInUser(), activity.getDate())) {
             activity.database.newShake(activity.getLoggedInUser(), activity.getDate(), 0);
         }
@@ -51,7 +55,7 @@ public class HomeFragment extends Fragment {
             activity.database.newOntime(activity.getLoggedInUser(), activity.getDate(), 0);
         }
 
-        if (activity.database.stepIDExists(activity.getDate(), activity.getLoggedInUser())) {
+        if (!activity.database.stepIDExists(activity.getDate(), activity.getLoggedInUser())) {
             activity.database.insertNewStepDay(0, activity.getLoggedInUser(), activity.getDate());
         }
 
@@ -65,6 +69,10 @@ public class HomeFragment extends Fragment {
         final TextView shakenum = view.findViewById(R.id.numShake);
         shakenum.setText(JitterString());
 
+
+        /**
+         * Switches the text depending on the prediction
+         */
         final TextView mood = view.findViewById(R.id.TextMoodPredict);
         int result = activity.prediction();
         switch (result) {
@@ -102,12 +110,18 @@ public class HomeFragment extends Fragment {
 
         }
 
+        /**
+         * Functions for the live timer on the dashboard
+         */
         final Chronometer chronometer = view.findViewById(R.id.timer);
         System.out.println("Time: " + activity.database.getOnTime(activity.getLoggedInUser(), activity.getDate()));
         chronometer.setBase(SystemClock.elapsedRealtime() - ((Long.parseLong(activity.database.getOnTime(activity.getLoggedInUser(), activity.getDate())) * 1000)));
         chronometer.start();
 
 
+        /**
+         * Refresh button to rerun a prediction without switching screens
+         */
         FloatingActionButton refresh = (FloatingActionButton) view.findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,6 +161,9 @@ public class HomeFragment extends Fragment {
         });
 
 
+        /**
+         * Opens the mood pop up window
+         */
         Button openMoodPopup = view.findViewById(R.id.set_mood);
         openMoodPopup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,6 +175,10 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Creates the pop up for selecting mood
+     * @param view - current view
+     */
     public void showPopup(View view) {
 
         View popupView = getLayoutInflater().inflate(R.layout.moodpopup, null);
@@ -262,6 +283,9 @@ public class HomeFragment extends Fragment {
 
     }
 
+    /**
+     * Stops the timer
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -269,15 +293,21 @@ public class HomeFragment extends Fragment {
         chronometer.stop();
     }
 
+    /**
+     * Restarts the timer
+     */
     @Override
     public void onStart() {
         super.onStart();
-        final MainActivity activity = (MainActivity) getActivity();
         Chronometer chronometer = getView().findViewById(R.id.timer);
         chronometer.start();
     }
 
 
+    /**
+     * Converts the jitter value into a string
+     * @return - string value of jitter for display
+     */
     public String JitterString() {
         MainActivity mainActivity = (MainActivity) getActivity();
         int shakebucket = mainActivity.getShakeBucketed();
@@ -308,6 +338,9 @@ public class HomeFragment extends Fragment {
         return retval;
     }
 
+    /**
+     * Sets the recommended location by checking for the location with the highest average mood history
+     */
     public void recommended() {
         MainActivity activity = (MainActivity) getActivity();
         ArrayList<Integer> results = new ArrayList<>();
