@@ -19,7 +19,7 @@ The application was with limited testing found to have greater predictive power 
 <img src="https://github.com/SimonLongstaff/MoodPredictor/blob/master/UseCase.png?raw=true">
 
 # Initial mock up
-<img src="">
+<img src="https://github.com/SimonLongstaff/MoodPredictor/blob/master/mock%20up.png?raw=true">
 
 # Bayesian Solution
 <img src="https://github.com/SimonLongstaff/MoodPredictor/blob/master/Equation.png?raw=true">
